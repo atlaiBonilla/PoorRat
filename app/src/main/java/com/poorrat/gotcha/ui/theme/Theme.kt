@@ -1,58 +1,168 @@
 package com.poorrat.gotcha.ui.theme
 
-import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
+
+data class PoorRatColors(
+    val isDark: Boolean,
+    val background: Color,
+    val surface: Color,
+    val surfaceCard: Color,
+    val surfaceElevated: Color,
+    val border: Color,
+    val borderSubtle: Color,
+    val textPrimary: Color,
+    val textSecondary: Color,
+    val textTertiary: Color,
+    val accent: Color,
+    val divider: Color,
+    val badgeBackground: Color,
+    val badgeText: Color,
+    val inputBackground: Color,
+    val inputBorder: Color,
+    val buttonPrimaryBg: Color,
+    val buttonPrimaryText: Color,
+    val buttonSecondaryBg: Color,
+    val buttonSecondaryText: Color,
+    val sheetBackground: Color,
+    val sheetDragHandle: Color,
+    val topBarBg: Color,
+    val bottomBarBg: Color,
+    val bottomBarDivider: Color,
+    val navSelected: Color,
+    val navUnselected: Color,
+    val navBadgeBg: Color,
+    val navBadgeText: Color,
+    val progressTrack: Color,
+    val progressFill: Color
+) {
+    val dragHandle: Color get() = sheetDragHandle
+    val textMuted: Color get() = textTertiary
+    val borderFocused: Color get() = textPrimary
+}
+
+val DarkPoorRatColors = PoorRatColors(
+    isDark = true,
+    background = DarkBackground,
+    surface = DarkSurface,
+    surfaceCard = DarkSurfaceCard,
+    surfaceElevated = DarkSurfaceElevated,
+    border = DarkBorder,
+    borderSubtle = DarkBorderSubtle,
+    textPrimary = TextWhite,
+    textSecondary = TextMutedDark,
+    textTertiary = TextSubtleDark,
+    accent = TextWhite,
+    divider = DarkBorderSubtle,
+    badgeBackground = DarkBadgeBg,
+    badgeText = TextWhite,
+    inputBackground = DarkInputBg,
+    inputBorder = DarkInputBorder,
+    buttonPrimaryBg = TextWhite,
+    buttonPrimaryText = TrueBlack,
+    buttonSecondaryBg = DarkGrey,
+    buttonSecondaryText = TextMutedDark,
+    sheetBackground = DarkSheetBg,
+    sheetDragHandle = DarkDragHandle,
+    topBarBg = DarkBackground,
+    bottomBarBg = DarkBackground,
+    bottomBarDivider = DarkBorderSubtle,
+    navSelected = TextWhite,
+    navUnselected = TextMutedLight,
+    navBadgeBg = TextWhite,
+    navBadgeText = TrueBlack,
+    progressTrack = DarkGrey,
+    progressFill = TextWhite
+)
+
+val LightPoorRatColors = PoorRatColors(
+    isDark = false,
+    background = LightBackground,
+    surface = LightSurface,
+    surfaceCard = LightSurfaceCard,
+    surfaceElevated = LightSurfaceElevated,
+    border = LightBorder,
+    borderSubtle = LightBorderSubtle,
+    textPrimary = TextDark,
+    textSecondary = TextMutedLight,
+    textTertiary = TextSubtleLight,
+    accent = TextDark,
+    divider = LightBorderSubtle,
+    badgeBackground = LightBadgeBg,
+    badgeText = TextDark,
+    inputBackground = LightInputBg,
+    inputBorder = LightInputBorder,
+    buttonPrimaryBg = TextDark,
+    buttonPrimaryText = TextWhite,
+    buttonSecondaryBg = LightGrey,
+    buttonSecondaryText = TextMutedLight,
+    sheetBackground = LightSheetBg,
+    sheetDragHandle = LightDragHandle,
+    topBarBg = LightBackground,
+    bottomBarBg = LightSurface,
+    bottomBarDivider = LightBorderSubtle,
+    navSelected = TextDark,
+    navUnselected = TextMutedDark,
+    navBadgeBg = TextDark,
+    navBadgeText = TextWhite,
+    progressTrack = BorderGrey,
+    progressFill = TextDark
+)
+
+val LocalPoorRatColors = staticCompositionLocalOf { DarkPoorRatColors }
+
+object PoorRatTheme {
+    val colors: PoorRatColors
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalPoorRatColors.current
+}
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = TextWhite,
+    onPrimary = TrueBlack,
+    background = DarkBackground,
+    onBackground = TextWhite,
+    surface = DarkSheetBg,
+    onSurface = TextWhite,
+    surfaceVariant = DarkSurfaceElevated,
+    onSurfaceVariant = TextMutedDark,
+    outline = DarkBorder
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = TextDark,
+    onPrimary = TextWhite,
+    background = LightBackground,
+    onBackground = TextDark,
+    surface = LightSurface,
+    onSurface = TextDark,
+    surfaceVariant = LightSurfaceElevated,
+    onSurfaceVariant = TextMutedLight,
+    outline = LightBorder
 )
 
 @Composable
 fun PoorRatTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    darkTheme: Boolean = true, // Default to true matching the dark mode mockups
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
+    val poorRatColors = if (darkTheme) DarkPoorRatColors else LightPoorRatColors
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    CompositionLocalProvider(LocalPoorRatColors provides poorRatColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
     }
-
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
 }
