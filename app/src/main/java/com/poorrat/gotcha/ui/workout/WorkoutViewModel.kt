@@ -57,13 +57,13 @@ class WorkoutViewModel(
 
     // Schedule Modal state
     private val _scheduleSelectedDay = MutableStateFlow(currentDayOfWeek)
-    private val _scheduleRoutineName = MutableStateFlow("Upper de Fuerza")
+    private val _scheduleRoutineName = MutableStateFlow("")
     private val _scheduleBodyPart = MutableStateFlow("Upper")
     private val _scheduleExercises = MutableStateFlow<List<RoutineExerciseEntity>>(emptyList())
     private val _newExName = MutableStateFlow("")
-    private val _newExSets = MutableStateFlow("4")
-    private val _newExReps = MutableStateFlow("8-10")
-    private val _newExWeight = MutableStateFlow("85")
+    private val _newExSets = MutableStateFlow("")
+    private val _newExReps = MutableStateFlow("")
+    private val _newExWeight = MutableStateFlow("")
 
     init {
         viewModelScope.launch {
@@ -216,12 +216,7 @@ class WorkoutViewModel(
 
     private fun startStopwatch() {
         stopwatchJob?.cancel()
-        stopwatchJob = viewModelScope.launch {
-            while (isActive && _isSessionRunning.value) {
-                delay(1000)
-                _sessionElapsedSeconds.value += 1
-            }
-        }
+        _sessionElapsedSeconds.value = 0L
     }
 
     fun updateExerciseCompleted(exerciseId: Long, completed: Boolean) {
@@ -286,12 +281,16 @@ class WorkoutViewModel(
     fun loadDayToSchedule(dayOfWeek: Int) {
         _scheduleSelectedDay.value = dayOfWeek
         val day = uiState.value.allRoutineDays.find { it.dayOfWeek == dayOfWeek }
-        _scheduleRoutineName.value = day?.routineName ?: "Upper de Fuerza"
+        _scheduleRoutineName.value = day?.routineName ?: ""
         _scheduleBodyPart.value = day?.bodyPart ?: "Upper"
 
         val ex = uiState.value.allExercises.filter { it.dayOfWeek == dayOfWeek }
             .sortedBy { it.exerciseOrder }
         _scheduleExercises.value = ex
+        _newExName.value = ""
+        _newExSets.value = ""
+        _newExReps.value = ""
+        _newExWeight.value = ""
     }
 
     fun updateScheduleRoutineName(name: String) {
@@ -314,8 +313,8 @@ class WorkoutViewModel(
         val name = _newExName.value.trim()
         if (name.isBlank() || _scheduleBodyPart.value == "Descanso") return
 
-        val sets = _newExSets.value.toIntOrNull() ?: 4
-        val reps = _newExReps.value.trim().ifBlank { "8-10" }
+        val sets = _newExSets.value.toIntOrNull() ?: 1
+        val reps = _newExReps.value.trim().ifBlank { "0" }
         val weight = _newExWeight.value.replace(',', '.').toFloatOrNull() ?: 0f
 
         val currentList = _scheduleExercises.value.toMutableList()
@@ -332,6 +331,9 @@ class WorkoutViewModel(
         )
         _scheduleExercises.value = currentList
         _newExName.value = ""
+        _newExSets.value = ""
+        _newExReps.value = ""
+        _newExWeight.value = ""
     }
 
     fun removeExerciseFromSchedule(index: Int) {

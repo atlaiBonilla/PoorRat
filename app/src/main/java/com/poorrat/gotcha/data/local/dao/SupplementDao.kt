@@ -37,4 +37,13 @@ interface SupplementDao {
 
     @Query("SELECT COUNT(*) FROM supplements")
     suspend fun getSupplementCount(): Int
+
+    @Query("SELECT * FROM supplements ORDER BY id ASC")
+    suspend fun getAllSupplementsSync(): List<SupplementEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSupplements(supplements: List<SupplementEntity>)
+
+    @Query("DELETE FROM supplements")
+    suspend fun clearAllSupplements()
 }

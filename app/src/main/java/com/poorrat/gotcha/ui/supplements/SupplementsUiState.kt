@@ -13,12 +13,21 @@ data class SupplementsUiState(
     val isAddSupplementModalVisible: Boolean = false,
     val isAdjustAlarmsModalVisible: Boolean = false,
     // Add Supplement Form State
+    val addTab: Int = 0, // 0 = Ingreso con IA, 1 = Ingreso Manual
+    val addAiPrompt: String = "",
+    val isAiEstimating: Boolean = false,
     val addName: String = "",
     val addDosage: String = "",
     val addIntakeMoment: String = "Con el desayuno",
     val addAlarmEnabled: Boolean = false,
     val addAlarmHour: Int = 8,
     val addAlarmMinute: Int = 0,
+    val addHasCalories: Boolean = false,
+    val addIsDailyConsumption: Boolean = false,
+    val addCalories: String = "",
+    val addProtein: String = "",
+    val addCarbs: String = "",
+    val addFat: String = "",
     val addErrorMessage: String? = null
 ) {
     val completionSubtitle: String

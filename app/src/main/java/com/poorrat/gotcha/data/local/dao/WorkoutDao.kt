@@ -18,6 +18,9 @@ interface WorkoutDao {
     @Query("SELECT * FROM routine_days ORDER BY dayOfWeek ASC")
     fun getAllRoutineDays(): Flow<List<RoutineDayEntity>>
 
+    @Query("SELECT * FROM routine_days ORDER BY dayOfWeek ASC")
+    suspend fun getAllRoutineDaysSync(): List<RoutineDayEntity>
+
     @Query("SELECT * FROM routine_days WHERE dayOfWeek = :dayOfWeek LIMIT 1")
     fun getRoutineDay(dayOfWeek: Int): Flow<RoutineDayEntity?>
 
@@ -88,4 +91,10 @@ interface WorkoutDao {
             updateExerciseProgress(exerciseId, weight, reps)
         }
     }
+
+    @Query("DELETE FROM routine_exercises")
+    suspend fun clearAllExercises()
+
+    @Query("DELETE FROM workout_session_logs")
+    suspend fun clearAllSessions()
 }

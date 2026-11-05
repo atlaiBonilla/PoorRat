@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material.icons.outlined.Medication
@@ -59,41 +60,46 @@ fun PoorRatBottomBar(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 10.dp, horizontal = 8.dp)
+                    .padding(vertical = 8.dp, horizontal = 4.dp)
                     .navigationBarsPadding(),
-                horizontalArrangement = Arrangement.SpaceAround,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 BottomNavItem(
                     label = "Alimentación",
                     icon = Icons.Outlined.Restaurant,
                     isSelected = currentTab == "Alimentación",
-                    onClick = { onTabSelected("Alimentación") }
+                    onClick = { onTabSelected("Alimentación") },
+                    modifier = Modifier.weight(1f)
                 )
                 BottomNavItem(
                     label = "Peso",
                     icon = Icons.Outlined.Scale,
                     isSelected = currentTab == "Peso",
-                    onClick = { onTabSelected("Peso") }
+                    onClick = { onTabSelected("Peso") },
+                    modifier = Modifier.weight(1f)
                 )
                 BottomNavItem(
                     label = "Entreno",
                     icon = Icons.Outlined.FitnessCenter,
                     isSelected = currentTab == "Entreno",
-                    onClick = { onTabSelected("Entreno") }
+                    onClick = { onTabSelected("Entreno") },
+                    modifier = Modifier.weight(1f)
                 )
                 BottomNavItem(
                     label = "Suplementos",
                     icon = Icons.Outlined.Medication,
                     isSelected = currentTab == "Suplementos",
-                    onClick = { onTabSelected("Suplementos") }
+                    onClick = { onTabSelected("Suplementos") },
+                    modifier = Modifier.weight(1f)
                 )
                 BottomNavItem(
                     label = "Tienda",
                     icon = Icons.Outlined.ShoppingBag,
                     badgeCount = 1,
                     isSelected = currentTab == "Tienda",
-                    onClick = { onTabSelected("Tienda") }
+                    onClick = { onTabSelected("Tienda") },
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
@@ -106,7 +112,8 @@ private fun BottomNavItem(
     icon: ImageVector,
     isSelected: Boolean,
     badgeCount: Int? = null,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val colors = PoorRatTheme.colors
     val activeColor = colors.navSelected
@@ -115,10 +122,10 @@ private fun BottomNavItem(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .clip(CircleShape)
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 4.dp)
+            .padding(vertical = 4.dp, horizontal = 2.dp)
             .testTag("nav_tab_${label.lowercase()}")
     ) {
         if (badgeCount != null) {
@@ -140,7 +147,7 @@ private fun BottomNavItem(
                     imageVector = icon,
                     contentDescription = label,
                     tint = if (isSelected) activeColor else inactiveColor,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
         } else {
@@ -148,20 +155,21 @@ private fun BottomNavItem(
                 imageVector = icon,
                 contentDescription = label,
                 tint = if (isSelected) activeColor else inactiveColor,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(22.dp)
             )
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(3.dp))
 
         Text(
             text = label,
-            fontSize = 11.sp,
+            fontSize = 10.5.sp,
+            maxLines = 1,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             color = if (isSelected) activeColor else inactiveColor
         )
 
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(3.dp))
 
         // Selected indicator dot
         if (isSelected) {

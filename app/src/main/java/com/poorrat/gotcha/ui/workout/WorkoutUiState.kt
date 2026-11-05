@@ -40,7 +40,7 @@ data class WorkoutUiState(
     val scheduleBodyPart: String = "Upper",
     val scheduleExercises: List<RoutineExerciseEntity> = emptyList(),
     val newExerciseName: String = "",
-    val newExerciseSets: String = "4",
-    val newExerciseReps: String = "8-10",
-    val newExerciseWeight: String = "85"
+    val newExerciseSets: String = "",
+    val newExerciseReps: String = "",
+    val newExerciseWeight: String = ""
 )

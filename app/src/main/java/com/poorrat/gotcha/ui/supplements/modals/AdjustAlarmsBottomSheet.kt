@@ -43,6 +43,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.displayCutoutPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import com.poorrat.gotcha.data.local.entity.SupplementEntity
 import com.poorrat.gotcha.ui.supplements.SupplementsUiState
 import com.poorrat.gotcha.ui.supplements.SupplementsViewModel
@@ -64,13 +66,21 @@ fun AdjustAlarmsBottomSheet(
         sheetState = sheetState,
         containerColor = colors.sheetBackground,
         dragHandle = {
-            Box(
+            Column(
                 modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .width(42.dp)
-                    .height(4.dp)
-                    .background(colors.dragHandle, CircleShape)
-            )
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .displayCutoutPadding()
+                    .padding(top = 28.dp, bottom = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .width(42.dp)
+                        .height(4.dp)
+                        .background(colors.dragHandle, CircleShape)
+                )
+            }
         }
     ) {
         Column(

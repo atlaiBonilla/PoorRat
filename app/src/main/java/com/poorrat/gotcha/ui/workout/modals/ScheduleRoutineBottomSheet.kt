@@ -8,10 +8,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -95,13 +99,21 @@ fun ScheduleRoutineBottomSheet(
         sheetState = sheetState,
         containerColor = colors.sheetBackground,
         dragHandle = {
-            Box(
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .width(42.dp)
-                    .height(4.dp)
-                    .background(colors.dragHandle, CircleShape)
-            )
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .displayCutoutPadding()
+                    .padding(top = 28.dp, bottom = 10.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(width = 44.dp, height = 5.dp)
+                        .clip(RoundedCornerShape(2.5.dp))
+                        .background(colors.dragHandle)
+                )
+            }
         },
         modifier = modifier.testTag("schedule_routine_bottom_sheet")
     ) {
@@ -109,7 +121,9 @@ fun ScheduleRoutineBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
-                .padding(bottom = 36.dp)
+                .navigationBarsPadding()
+                .imePadding()
+                .padding(bottom = 40.dp)
         ) {
             // Header: Programar Rutina, Close Button
             item {
@@ -410,7 +424,7 @@ fun ScheduleRoutineBottomSheet(
                                                 modifier = Modifier
                                                     .size(16.dp)
                                                     .clickable {
-                                                        val cur = uiState.newExerciseSets.toIntOrNull() ?: 3
+                                                        val cur = uiState.newExerciseSets.toIntOrNull() ?: 0
                                                         onNewExSetsChange((cur + 1).toString())
                                                     }
                                             )
@@ -421,7 +435,7 @@ fun ScheduleRoutineBottomSheet(
                                                 modifier = Modifier
                                                     .size(16.dp)
                                                     .clickable {
-                                                        val cur = uiState.newExerciseSets.toIntOrNull() ?: 3
+                                                        val cur = uiState.newExerciseSets.toIntOrNull() ?: 0
                                                         if (cur > 1) onNewExSetsChange((cur - 1).toString())
                                                     }
                                             )
@@ -450,7 +464,7 @@ fun ScheduleRoutineBottomSheet(
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            // Fila Peso objetivo & Botón Agregar
+                            // Fila Peso & Botón Agregar
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -459,8 +473,8 @@ fun ScheduleRoutineBottomSheet(
                                 OutlinedTextField(
                                     value = uiState.newExerciseWeight,
                                     onValueChange = onNewExWeightChange,
-                                    placeholder = { Text("Peso objetivo (kg)", fontSize = 12.sp, color = colors.textMuted) },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    placeholder = { Text("Peso", fontSize = 12.sp, color = colors.textMuted) },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                     modifier = Modifier.weight(1f),
                                     shape = RoundedCornerShape(10.dp),
                                     colors = OutlinedTextFieldDefaults.colors(

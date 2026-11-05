@@ -2,15 +2,22 @@ package com.poorrat.gotcha.ui.nutrition
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.poorrat.gotcha.data.ai.EstimatedFoodResult
+import com.poorrat.gotcha.data.ai.FoodSearchGroundingEstimator
+import com.poorrat.gotcha.data.ai.GroundingResult
 import com.poorrat.gotcha.data.local.entity.DailyFoodLog
 import com.poorrat.gotcha.data.local.entity.FoodItem
 import com.poorrat.gotcha.data.local.entity.UserNutritionConfig
 import com.poorrat.gotcha.data.local.entity.WeightLog
 import com.poorrat.gotcha.data.repository.NutritionRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
@@ -27,6 +34,17 @@ private data class NutritionDatabaseData(
 
 private data class NutritionFormInputs(
     val activeSheet: ActiveBottomSheet,
+    val activeAddFoodTab: Int,
+    val aiFoodPrompt: String,
+    val isAiEstimating: Boolean,
+    val aiEstimatedResult: EstimatedFoodResult?,
+    val aiErrorMessage: String?,
+    val manualFoodName: String,
+    val manualGrams: String,
+    val manualCaloriesTotal: String,
+    val manualProteinTotal: String,
+    val manualCarbsTotal: String,
+    val manualFatTotal: String,
     val foodSearchQuery: String,
     val selectedFoodItem: FoodItem?,
     val gramsInput: String,
@@ -44,6 +62,25 @@ class NutritionViewModel(
     private val sundayDate = today.with(DayOfWeek.SUNDAY).format(dateFormatter)
 
     private val _activeSheet = MutableStateFlow(ActiveBottomSheet.NONE)
+
+    // Add Food Tabs: 0 = Catálogo (primera opción por defecto), 1 = IA, 2 = Manual
+    private val _activeAddFoodTab = MutableStateFlow(0)
+
+    // AI Estimation state
+    private val _aiFoodPrompt = MutableStateFlow("")
+    private val _isAiEstimating = MutableStateFlow(false)
+    private val _aiEstimatedResult = MutableStateFlow<EstimatedFoodResult?>(null)
+    private val _aiErrorMessage = MutableStateFlow<String?>(null)
+
+    // Manual Food Entry state
+    private val _manualFoodName = MutableStateFlow("")
+    private val _manualGrams = MutableStateFlow("")
+    private val _manualCaloriesTotal = MutableStateFlow("")
+    private val _manualProteinTotal = MutableStateFlow("")
+    private val _manualCarbsTotal = MutableStateFlow("")
+    private val _manualFatTotal = MutableStateFlow("")
+
+    // Catalog state
     private val _foodSearchQuery = MutableStateFlow("")
     private val _selectedFoodItem = MutableStateFlow<FoodItem?>(null)
     private val _gramsInput = MutableStateFlow("120")
@@ -51,45 +88,54 @@ class NutritionViewModel(
     private val _manualProteinPer100g = MutableStateFlow("")
     private val _manualCarbsPer100g = MutableStateFlow("")
     private val _manualFatPer100g = MutableStateFlow("")
+    private val _catalogSearchResults = MutableStateFlow<List<FoodItem>>(emptyList())
 
-    // Calculator inputs
+    // Calculator inputs (all numeric defaults empty string per requirement)
     private val _calcAutoSyncWeight = MutableStateFlow(true)
     private val _calcSex = MutableStateFlow("MALE")
-    private val _calcWeightKg = MutableStateFlow("74.5")
-    private val _calcHeightCm = MutableStateFlow("178")
-    private val _calcAge = MutableStateFlow("26")
+    private val _calcWeightKg = MutableStateFlow("")
+    private val _calcHeightCm = MutableStateFlow("")
+    private val _calcAge = MutableStateFlow("")
     private val _calcActivityLevel = MutableStateFlow("MODERATE")
     private val _calcGoalType = MutableStateFlow("DEFICIT")
-    private val _calcAdjustmentCalories = MutableStateFlow("350")
-
-    private val _catalogSearchResults = MutableStateFlow<List<FoodItem>>(emptyList())
+    private val _calcAdjustmentCalories = MutableStateFlow("")
 
     init {
         viewModelScope.launch {
             repository.prepopulateIfEmpty()
         }
 
-        // Live search observer
-        viewModelScope.launch {
-            _foodSearchQuery.collect { query ->
-                if (query.isBlank()) {
-                    _catalogSearchResults.value = emptyList()
-                } else {
-                    repository.searchFood(query.trim()).collect { results ->
-                        _catalogSearchResults.value = results
-                        val exactMatch = results.find { it.name.equals(query.trim(), ignoreCase = true) }
-                        if (exactMatch != null && _selectedFoodItem.value == null) {
-                            _selectedFoodItem.value = exactMatch
+        // High-performance search observer for Catalog tab
+        // Runs on Dispatchers.Default with debounce so typing in the text field never drops frames or input events
+        viewModelScope.launch(Dispatchers.Default) {
+            combine(repository.getAllFoods(), _foodSearchQuery) { allFoods, rawQuery ->
+                Pair(allFoods, rawQuery)
+            }
+                .flowOn(Dispatchers.Default)
+                .collectLatest { (allFoods, rawQuery) ->
+                    val query = rawQuery.trim()
+                    if (query.isNotBlank()) {
+                        delay(60L)
+                    }
+                    val filtered = if (query.isBlank()) {
+                        allFoods
+                    } else {
+                        val normalizedTokens = normalizeForSearch(query)
+                            .split(Regex("\\s+"))
+                            .filter { it.isNotBlank() }
+                        allFoods.filter { item ->
+                            val normalizedName = normalizeForSearch(item.name)
+                            normalizedTokens.all { token -> normalizedName.contains(token) }
                         }
                     }
+                    _catalogSearchResults.value = filtered
                 }
-            }
         }
 
         // Auto-update weight if sync is active
         viewModelScope.launch {
             repository.latestWeightLog.collect { latest ->
-                if (latest != null && _calcAutoSyncWeight.value) {
+                if (latest != null && latest.weightKg > 0f && _calcAutoSyncWeight.value) {
                     _calcWeightKg.value = String.format(java.util.Locale.US, "%.1f", latest.weightKg)
                 }
             }
@@ -108,7 +154,6 @@ class NutritionViewModel(
         latestWeightFlow
     ) { config, todayLogs, weekLogs, latestWeight ->
         val actualConfig = config ?: UserNutritionConfig()
-        // If config changed autoSyncWeight, sync our local toggle
         _calcAutoSyncWeight.value = actualConfig.autoSyncWeight
         NutritionDatabaseData(
             config = actualConfig,
@@ -118,26 +163,163 @@ class NutritionViewModel(
         )
     }
 
-    private val formInputsFlow = combine(
-        _activeSheet,
+    private data class AiInputs(
+        val tab: Int,
+        val prompt: String,
+        val estimating: Boolean,
+        val result: EstimatedFoodResult?,
+        val error: String?
+    )
+
+    private data class ManualInputs(
+        val name: String,
+        val grams: String,
+        val calories: String,
+        val protein: String,
+        val carbs: String,
+        val fat: String
+    )
+
+    private data class CatalogInputs(
+        val query: String,
+        val selectedItem: FoodItem?,
+        val grams: String,
+        val searchResults: List<FoodItem>
+    )
+
+    private val aiInputsFlow = combine(
+        _activeAddFoodTab,
+        _aiFoodPrompt,
+        _isAiEstimating,
+        _aiEstimatedResult,
+        _aiErrorMessage
+    ) { tab, prompt, estimating, result, error ->
+        AiInputs(tab, prompt, estimating, result, error)
+    }
+
+    private val manualMacrosFlow = combine(
+        _manualCaloriesTotal,
+        _manualProteinTotal,
+        _manualCarbsTotal,
+        _manualFatTotal
+    ) { cal, prot, carb, fat ->
+        listOf(cal, prot, carb, fat)
+    }
+
+    private val manualInputsFlow = combine(
+        _manualFoodName,
+        _manualGrams,
+        manualMacrosFlow
+    ) { name, g, macros ->
+        ManualInputs(
+            name = name,
+            grams = g,
+            calories = macros[0],
+            protein = macros[1],
+            carbs = macros[2],
+            fat = macros[3]
+        )
+    }
+
+    private val catalogInputsFlow = combine(
         _foodSearchQuery,
         _selectedFoodItem,
         _gramsInput,
         _catalogSearchResults
-    ) { sheet, query, selectedFood, grams, searchResults ->
+    ) { query, selected, grams, results ->
+        CatalogInputs(query, selected, grams, results)
+    }
+
+    private val formInputsFlow = combine(
+        _activeSheet,
+        aiInputsFlow,
+        manualInputsFlow,
+        catalogInputsFlow
+    ) { sheet, ai, manual, catalog ->
         NutritionFormInputs(
             activeSheet = sheet,
-            foodSearchQuery = query,
-            selectedFoodItem = selectedFood,
-            gramsInput = grams,
-            catalogSearchResults = searchResults
+            activeAddFoodTab = ai.tab,
+            aiFoodPrompt = ai.prompt,
+            isAiEstimating = ai.estimating,
+            aiEstimatedResult = ai.result,
+            aiErrorMessage = ai.error,
+            manualFoodName = manual.name,
+            manualGrams = manual.grams,
+            manualCaloriesTotal = manual.calories,
+            manualProteinTotal = manual.protein,
+            manualCarbsTotal = manual.carbs,
+            manualFatTotal = manual.fat,
+            foodSearchQuery = catalog.query,
+            selectedFoodItem = catalog.selectedItem,
+            gramsInput = catalog.grams,
+            catalogSearchResults = catalog.searchResults
+        )
+    }
+
+    private data class CalcPhysicalInputs(
+        val sex: String,
+        val weightKg: String,
+        val heightCm: String,
+        val age: String
+    )
+
+    private data class CalcGoalInputs(
+        val activityLevel: String,
+        val goalType: String,
+        val adjustmentCalories: String,
+        val autoSyncWeight: Boolean
+    )
+
+    private data class CalculatorInputs(
+        val sex: String,
+        val weightKg: String,
+        val heightCm: String,
+        val age: String,
+        val activityLevel: String,
+        val goalType: String,
+        val adjustmentCalories: String,
+        val autoSyncWeight: Boolean
+    )
+
+    private val calcPhysicalFlow = combine(
+        _calcSex,
+        _calcWeightKg,
+        _calcHeightCm,
+        _calcAge
+    ) { sex, weight, height, age ->
+        CalcPhysicalInputs(sex, weight, height, age)
+    }
+
+    private val calcGoalFlow = combine(
+        _calcActivityLevel,
+        _calcGoalType,
+        _calcAdjustmentCalories,
+        _calcAutoSyncWeight
+    ) { activity, goal, adjustment, autoSync ->
+        CalcGoalInputs(activity, goal, adjustment, autoSync)
+    }
+
+    private val calculatorInputsFlow = combine(
+        calcPhysicalFlow,
+        calcGoalFlow
+    ) { physical, goal ->
+        CalculatorInputs(
+            sex = physical.sex,
+            weightKg = physical.weightKg,
+            heightCm = physical.heightCm,
+            age = physical.age,
+            activityLevel = goal.activityLevel,
+            goalType = goal.goalType,
+            adjustmentCalories = goal.adjustmentCalories,
+            autoSyncWeight = goal.autoSyncWeight
         )
     }
 
     val uiState: StateFlow<NutritionUiState> = combine(
         databaseDataFlow,
-        formInputsFlow
-    ) { dbData, formInputs ->
+        formInputsFlow,
+        calculatorInputsFlow
+    ) { dbData, formInputs, calcInputs ->
 
         val actualConfig = dbData.config
         val dailyTarget = actualConfig.dailyCalorieTarget
@@ -147,7 +329,7 @@ class NutritionViewModel(
         val todayCarb = dbData.todayLogs.fold(0f) { acc, log -> acc + log.carbsGrams }
         val todayFat = dbData.todayLogs.fold(0f) { acc, log -> acc + log.fatGrams }
 
-        val remaining = dailyTarget - todayCal
+        val remaining = if (dailyTarget > 0) dailyTarget - todayCal else 0
         val progress = if (dailyTarget > 0) ((todayCal.toFloat() / dailyTarget) * 100).roundToInt() else 0
 
         // Week aggregation
@@ -180,13 +362,13 @@ class NutritionViewModel(
 
         // Preview calculations for calculator
         val (calcBmr, calcTdee, calcTarget) = computeMifflinValues(
-            sex = _calcSex.value,
-            weightStr = _calcWeightKg.value,
-            heightStr = _calcHeightCm.value,
-            ageStr = _calcAge.value,
-            activity = _calcActivityLevel.value,
-            goal = _calcGoalType.value,
-            adjustmentStr = _calcAdjustmentCalories.value
+            sex = calcInputs.sex,
+            weightStr = calcInputs.weightKg,
+            heightStr = calcInputs.heightCm,
+            ageStr = calcInputs.age,
+            activity = calcInputs.activityLevel,
+            goal = calcInputs.goalType,
+            adjustmentStr = calcInputs.adjustmentCalories
         )
 
         NutritionUiState(
@@ -203,6 +385,17 @@ class NutritionViewModel(
             weekAverageCalories = weekAvg,
             weeklyDays = weeklyDays,
             activeSheet = formInputs.activeSheet,
+            activeAddFoodTab = formInputs.activeAddFoodTab,
+            aiFoodPrompt = formInputs.aiFoodPrompt,
+            isAiEstimating = formInputs.isAiEstimating,
+            aiEstimatedResult = formInputs.aiEstimatedResult,
+            aiErrorMessage = formInputs.aiErrorMessage,
+            manualFoodName = formInputs.manualFoodName,
+            manualGrams = formInputs.manualGrams,
+            manualCaloriesTotal = formInputs.manualCaloriesTotal,
+            manualProteinTotal = formInputs.manualProteinTotal,
+            manualCarbsTotal = formInputs.manualCarbsTotal,
+            manualFatTotal = formInputs.manualFatTotal,
             foodSearchQuery = formInputs.foodSearchQuery,
             catalogSearchResults = formInputs.catalogSearchResults,
             selectedFoodItem = formInputs.selectedFoodItem,
@@ -211,15 +404,15 @@ class NutritionViewModel(
             manualProteinPer100g = _manualProteinPer100g.value,
             manualCarbsPer100g = _manualCarbsPer100g.value,
             manualFatPer100g = _manualFatPer100g.value,
-            calcAutoSyncWeight = _calcAutoSyncWeight.value,
+            calcAutoSyncWeight = calcInputs.autoSyncWeight,
             latestLoggedWeight = latestLoggedWeightVal,
-            calcSex = _calcSex.value,
-            calcWeightKg = _calcWeightKg.value,
-            calcHeightCm = _calcHeightCm.value,
-            calcAge = _calcAge.value,
-            calcActivityLevel = _calcActivityLevel.value,
-            calcGoalType = _calcGoalType.value,
-            calcAdjustmentCalories = _calcAdjustmentCalories.value,
+            calcSex = calcInputs.sex,
+            calcWeightKg = calcInputs.weightKg,
+            calcHeightCm = calcInputs.heightCm,
+            calcAge = calcInputs.age,
+            calcActivityLevel = calcInputs.activityLevel,
+            calcGoalType = calcInputs.goalType,
+            calcAdjustmentCalories = calcInputs.adjustmentCalories,
             previewBmr = calcBmr,
             previewTdee = calcTdee,
             previewTarget = calcTarget
@@ -233,13 +426,19 @@ class NutritionViewModel(
     fun openSheet(sheet: ActiveBottomSheet) {
         _activeSheet.value = sheet
         if (sheet == ActiveBottomSheet.DAILY_INTAKE) {
+            _activeAddFoodTab.value = 0
+            _aiFoodPrompt.value = ""
+            _aiEstimatedResult.value = null
+            _aiErrorMessage.value = null
+            _manualFoodName.value = ""
+            _manualGrams.value = ""
+            _manualCaloriesTotal.value = ""
+            _manualProteinTotal.value = ""
+            _manualCarbsTotal.value = ""
+            _manualFatTotal.value = ""
             _foodSearchQuery.value = ""
             _selectedFoodItem.value = null
             _gramsInput.value = "120"
-            _manualCaloriesPer100g.value = ""
-            _manualProteinPer100g.value = ""
-            _manualCarbsPer100g.value = ""
-            _manualFatPer100g.value = ""
         } else if (sheet == ActiveBottomSheet.CALORIE_CALCULATOR) {
             val cur = uiState.value.config
             _calcAutoSyncWeight.value = cur.autoSyncWeight
@@ -249,12 +448,12 @@ class NutritionViewModel(
             } else {
                 cur.weightKg
             }
-            _calcWeightKg.value = String.format(java.util.Locale.US, "%.1f", weightVal)
-            _calcHeightCm.value = cur.heightCm.toString()
-            _calcAge.value = cur.age.toString()
+            _calcWeightKg.value = if (weightVal > 0f) String.format(java.util.Locale.US, "%.1f", weightVal) else ""
+            _calcHeightCm.value = if (cur.heightCm > 0) cur.heightCm.toString() else ""
+            _calcAge.value = if (cur.age > 0) cur.age.toString() else ""
             _calcActivityLevel.value = cur.activityLevel
             _calcGoalType.value = cur.goalType
-            _calcAdjustmentCalories.value = cur.calorieAdjustment.toString()
+            _calcAdjustmentCalories.value = if (cur.calorieAdjustment > 0) cur.calorieAdjustment.toString() else ""
         }
     }
 
@@ -262,6 +461,149 @@ class NutritionViewModel(
         _activeSheet.value = ActiveBottomSheet.NONE
     }
 
+    // --- Add Food Tabs ---
+    fun setAddFoodTab(tab: Int) {
+        _activeAddFoodTab.value = tab
+    }
+
+    // --- AI Estimation ---
+    fun updateAiFoodPrompt(prompt: String) {
+        _aiFoodPrompt.value = prompt
+    }
+
+    fun estimateFoodWithAi() {
+        val prompt = _aiFoodPrompt.value.trim()
+        if (prompt.isBlank()) {
+            _aiErrorMessage.value = "Ingresa lo que comiste para que la IA pueda calcularlo"
+            _aiEstimatedResult.value = null
+            return
+        }
+
+        viewModelScope.launch {
+            _isAiEstimating.value = true
+            _aiErrorMessage.value = null
+            _aiEstimatedResult.value = null
+            try {
+                // Real macros grounded in Google Search via Gemini 3.8 Flash
+                when (val result = FoodSearchGroundingEstimator.estimateFood(prompt)) {
+                    is GroundingResult.Success -> {
+                        _aiEstimatedResult.value = result.result
+                        _aiErrorMessage.value = null
+                    }
+                    is GroundingResult.NotEdible -> {
+                        _aiEstimatedResult.value = null
+                        _aiErrorMessage.value = "No se identificó ningún alimento o bebida comestible en tu texto (ej. objetos, acciones o texto no relacionado). Prueba con alimentos reales, platos o combos."
+                    }
+                    is GroundingResult.Failure -> {
+                        _aiEstimatedResult.value = null
+                        val rawMsg = result.message
+                        _aiErrorMessage.value = if (rawMsg.contains("cuota", ignoreCase = true) || rawMsg.contains("quota", ignoreCase = true)) {
+                            rawMsg
+                        } else {
+                            "Error al estimar alimento: $rawMsg"
+                        }
+                    }
+                }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _aiErrorMessage.value = "Error al estimar con Google Search: ${e.localizedMessage ?: "Verifica tu conexión"}"
+                _aiEstimatedResult.value = null
+            } finally {
+                _isAiEstimating.value = false
+            }
+        }
+    }
+
+    fun updateEstimatedValues(
+        name: String,
+        grams: Float,
+        calories: Int,
+        protein: Float,
+        carbs: Float,
+        fat: Float
+    ) {
+        _aiEstimatedResult.value = _aiEstimatedResult.value?.copy(
+            foodName = name,
+            grams = grams,
+            calories = calories,
+            protein = protein,
+            carbs = carbs,
+            fat = fat
+        ) ?: EstimatedFoodResult(name, grams, calories, protein, carbs, fat)
+    }
+
+    fun registerAiEstimatedFood() {
+        val result = _aiEstimatedResult.value ?: return
+        viewModelScope.launch {
+            repository.insertLog(
+                DailyFoodLog(
+                    foodName = result.foodName,
+                    gramsConsumed = result.grams,
+                    calories = result.calories,
+                    proteinGrams = result.protein,
+                    carbsGrams = result.carbs,
+                    fatGrams = result.fat,
+                    timestampMillis = System.currentTimeMillis(),
+                    dateString = todayString
+                )
+            )
+            _aiFoodPrompt.value = ""
+            _aiEstimatedResult.value = null
+            closeSheet()
+        }
+    }
+
+    // --- Manual Food Entry ---
+    fun updateManualFoodForm(
+        name: String,
+        grams: String,
+        cal: String,
+        prot: String,
+        carbs: String,
+        fat: String
+    ) {
+        _manualFoodName.value = name
+        _manualGrams.value = grams.filter { it.isDigit() || it == '.' || it == ',' }
+        _manualCaloriesTotal.value = cal.filter { it.isDigit() }
+        _manualProteinTotal.value = prot.filter { it.isDigit() || it == '.' || it == ',' }
+        _manualCarbsTotal.value = carbs.filter { it.isDigit() || it == '.' || it == ',' }
+        _manualFatTotal.value = fat.filter { it.isDigit() || it == '.' || it == ',' }
+    }
+
+    fun registerManualFood() {
+        val name = _manualFoodName.value.trim().ifBlank { "Comida personalizada" }
+        val grams = _manualGrams.value.replace(',', '.').toFloatOrNull() ?: 100f
+        // Any field left empty or unknown is taken as 0 per user requirement
+        val cal = _manualCaloriesTotal.value.toIntOrNull() ?: 0
+        val prot = _manualProteinTotal.value.replace(',', '.').toFloatOrNull() ?: 0f
+        val carbs = _manualCarbsTotal.value.replace(',', '.').toFloatOrNull() ?: 0f
+        val fat = _manualFatTotal.value.replace(',', '.').toFloatOrNull() ?: 0f
+
+        viewModelScope.launch {
+            repository.insertLog(
+                DailyFoodLog(
+                    foodName = name,
+                    gramsConsumed = grams,
+                    calories = cal,
+                    proteinGrams = prot,
+                    carbsGrams = carbs,
+                    fatGrams = fat,
+                    timestampMillis = System.currentTimeMillis(),
+                    dateString = todayString
+                )
+            )
+            _manualFoodName.value = ""
+            _manualGrams.value = ""
+            _manualCaloriesTotal.value = ""
+            _manualProteinTotal.value = ""
+            _manualCarbsTotal.value = ""
+            _manualFatTotal.value = ""
+            closeSheet()
+        }
+    }
+
+    // --- Catalog Functions ---
     fun updateSearchQuery(query: String) {
         _foodSearchQuery.value = query
         if (_selectedFoodItem.value != null && !_selectedFoodItem.value!!.name.equals(query, ignoreCase = true)) {
@@ -276,6 +618,30 @@ class NutritionViewModel(
 
     fun clearSelectedFood() {
         _selectedFoodItem.value = null
+        _foodSearchQuery.value = ""
+    }
+
+    fun useTypedQueryAsFood(name: String) {
+        val trimmed = name.trim().ifBlank { "Alimento personalizado" }
+        _selectedFoodItem.value = FoodItem(
+            id = 0L,
+            name = trimmed,
+            caloriesPer100g = 150f,
+            proteinPer100g = 10f,
+            carbsPer100g = 15f,
+            fatPer100g = 5f
+        )
+        _foodSearchQuery.value = trimmed
+    }
+
+    fun switchToAiWithQuery(query: String) {
+        _aiFoodPrompt.value = query.trim()
+        _activeAddFoodTab.value = 1
+    }
+
+    fun switchToManualWithQuery(query: String) {
+        _manualFoodName.value = query.trim()
+        _activeAddFoodTab.value = 2
     }
 
     fun updateGrams(grams: String) {
@@ -320,15 +686,6 @@ class NutritionViewModel(
                 val carbs100 = _manualCarbsPer100g.value.toFloatOrNull() ?: 0f
                 val fat100 = _manualFatPer100g.value.toFloatOrNull() ?: 0f
 
-                val newFood = FoodItem(
-                    name = foodName,
-                    caloriesPer100g = cal100,
-                    proteinPer100g = prot100,
-                    carbsPer100g = carbs100,
-                    fatPer100g = fat100
-                )
-                repository.insertFood(newFood)
-
                 val factor = grams / 100f
                 val cal = (cal100 * factor).roundToInt()
                 val prot = prot100 * factor
@@ -348,13 +705,7 @@ class NutritionViewModel(
                     )
                 )
             }
-
-            _foodSearchQuery.value = ""
-            _selectedFoodItem.value = null
-            _manualCaloriesPer100g.value = ""
-            _manualProteinPer100g.value = ""
-            _manualCarbsPer100g.value = ""
-            _manualFatPer100g.value = ""
+            closeSheet()
         }
     }
 
@@ -364,11 +715,14 @@ class NutritionViewModel(
         }
     }
 
-    // --- Calculator Events ---
+    // --- Calculator Methods ---
     fun setCalcAutoSyncWeight(enabled: Boolean) {
         _calcAutoSyncWeight.value = enabled
         if (enabled) {
-            _calcWeightKg.value = String.format(java.util.Locale.US, "%.1f", uiState.value.latestLoggedWeight)
+            val latest = uiState.value.latestLoggedWeight
+            if (latest > 0f) {
+                _calcWeightKg.value = String.format(java.util.Locale.US, "%.1f", latest)
+            }
         }
         viewModelScope.launch {
             repository.updateAutoSyncWeight(enabled)
@@ -378,14 +732,14 @@ class NutritionViewModel(
     fun setCalcSex(sex: String) { _calcSex.value = sex }
     fun setCalcWeight(weight: String) {
         if (!_calcAutoSyncWeight.value) {
-            _calcWeightKg.value = weight
+            _calcWeightKg.value = weight.filter { it.isDigit() || it == '.' || it == ',' }
         }
     }
-    fun setCalcHeight(height: String) { _calcHeightCm.value = height }
-    fun setCalcAge(age: String) { _calcAge.value = age }
+    fun setCalcHeight(height: String) { _calcHeightCm.value = height.filter { it.isDigit() } }
+    fun setCalcAge(age: String) { _calcAge.value = age.filter { it.isDigit() } }
     fun setCalcActivity(activity: String) { _calcActivityLevel.value = activity }
     fun setCalcGoal(goal: String) { _calcGoalType.value = goal }
-    fun setCalcAdjustment(adjustment: String) { _calcAdjustmentCalories.value = adjustment }
+    fun setCalcAdjustment(adjustment: String) { _calcAdjustmentCalories.value = adjustment.filter { it.isDigit() } }
 
     fun applyCalculatedGoal() {
         val (bmr, tdee, target) = computeMifflinValues(
@@ -401,14 +755,14 @@ class NutritionViewModel(
         val updated = UserNutritionConfig(
             id = 1,
             sex = _calcSex.value,
-            weightKg = _calcWeightKg.value.replace(',', '.').toFloatOrNull() ?: 74.5f,
+            weightKg = _calcWeightKg.value.replace(',', '.').toFloatOrNull() ?: 0f,
             targetWeightKg = uiState.value.config.targetWeightKg,
             autoSyncWeight = _calcAutoSyncWeight.value,
-            heightCm = _calcHeightCm.value.toIntOrNull() ?: 178,
-            age = _calcAge.value.toIntOrNull() ?: 26,
+            heightCm = _calcHeightCm.value.toIntOrNull() ?: 0,
+            age = _calcAge.value.toIntOrNull() ?: 0,
             activityLevel = _calcActivityLevel.value,
             goalType = _calcGoalType.value,
-            calorieAdjustment = _calcAdjustmentCalories.value.toIntOrNull() ?: 350,
+            calorieAdjustment = _calcAdjustmentCalories.value.toIntOrNull() ?: 0,
             bmr = bmr,
             tdee = tdee,
             dailyCalorieTarget = target
@@ -430,10 +784,14 @@ class NutritionViewModel(
             goal: String,
             adjustmentStr: String
         ): Triple<Int, Int, Int> {
-            val weight = weightStr.replace(',', '.').toFloatOrNull() ?: 74.5f
-            val height = heightStr.toIntOrNull() ?: 178
-            val age = ageStr.toIntOrNull() ?: 26
-            val adjustment = adjustmentStr.toIntOrNull() ?: 350
+            val weight = weightStr.replace(',', '.').toFloatOrNull() ?: 0f
+            val height = heightStr.toIntOrNull() ?: 0
+            val age = ageStr.toIntOrNull() ?: 0
+            val adjustment = adjustmentStr.toIntOrNull() ?: 0
+
+            if (weight <= 0f || height <= 0 || age <= 0) {
+                return Triple(0, 0, 0)
+            }
 
             val base = (10f * weight) + (6.25f * height) - (5f * age)
             val bmr = if (sex == "FEMALE") (base - 161f).roundToInt() else (base + 5f).roundToInt()
@@ -459,3 +817,17 @@ class NutritionViewModel(
         }
     }
 }
+
+private fun normalizeForSearch(input: String): String {
+    return input.lowercase()
+        .replace('á', 'a')
+        .replace('é', 'e')
+        .replace('í', 'i')
+        .replace('ó', 'o')
+        .replace('ú', 'u')
+        .replace('ü', 'u')
+        .replace('ñ', 'n')
+}
+
+private data class NutritionTuple4<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
+private data class NutritionTuple5<A, B, C, D, E>(val first: A, val second: B, val third: C, val fourth: D, val fifth: E)

@@ -7,10 +7,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -62,21 +66,31 @@ fun WeightHistoryBottomSheet(
         sheetState = sheetState,
         containerColor = colors.sheetBackground,
         dragHandle = {
-            Box(
+            Column(
                 modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .width(42.dp)
-                    .height(4.dp)
-                    .background(colors.dragHandle, CircleShape)
-            )
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .displayCutoutPadding()
+                    .padding(top = 28.dp, bottom = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .width(42.dp)
+                        .height(4.dp)
+                        .background(colors.dragHandle, CircleShape)
+                )
+            }
         },
         modifier = modifier.testTag("weight_history_bottom_sheet")
     ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
+                .navigationBarsPadding()
+                .imePadding()
                 .padding(horizontal = 20.dp)
-                .padding(bottom = 36.dp)
+                .padding(bottom = 40.dp)
         ) {
             // Header: Title, Subtitle, Close Button
             item {

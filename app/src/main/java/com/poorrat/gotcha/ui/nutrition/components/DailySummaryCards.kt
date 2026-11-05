@@ -102,8 +102,9 @@ fun WeeklyVsDailySummaryCard(
                     )
                 }
                 Spacer(modifier = Modifier.height(6.dp))
+                val metaWeekText = if (weekTarget > 0) "Meta: ${numberFormat.format(weekTarget)}" else "Meta: Sin definir"
                 Text(
-                    text = "Meta: ${numberFormat.format(weekTarget)}",
+                    text = metaWeekText,
                     fontSize = 12.sp,
                     color = colors.textSecondary
                 )
@@ -150,7 +151,9 @@ fun WeeklyVsDailySummaryCard(
                     )
                 }
                 Spacer(modifier = Modifier.height(6.dp))
-                val remainingText = if (remainingCalories >= 0) {
+                val remainingText = if (dailyTarget <= 0) {
+                    "Meta no fijada"
+                } else if (remainingCalories >= 0) {
                     "${numberFormat.format(remainingCalories)} restantes"
                 } else {
                     "${numberFormat.format(-remainingCalories)} excedidas"
@@ -214,8 +217,13 @@ fun DailyProgressAndMacrosCard(
                     )
                 }
 
+                val targetText = if (dailyTarget > 0) {
+                    "${numberFormat.format(todayCalories)} / ${numberFormat.format(dailyTarget)} kcal"
+                } else {
+                    "${numberFormat.format(todayCalories)} / -- kcal"
+                }
                 Text(
-                    text = "${numberFormat.format(todayCalories)} / ${numberFormat.format(dailyTarget)} kcal",
+                    text = targetText,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                     color = colors.textSecondary

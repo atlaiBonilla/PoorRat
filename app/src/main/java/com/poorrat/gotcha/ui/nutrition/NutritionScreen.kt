@@ -42,6 +42,7 @@ fun NutritionScreen(
     onNavigateToSupplements: () -> Unit = {},
     onNavigateToShop: () -> Unit = {},
     onToggleTheme: (() -> Unit)? = null,
+    onLogoClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -56,7 +57,8 @@ fun NutritionScreen(
         topBar = {
             PoorRatTopBar(
                 onAddClick = { viewModel.openSheet(ActiveBottomSheet.DAILY_INTAKE) },
-                onToggleTheme = onToggleTheme
+                onToggleTheme = onToggleTheme,
+                onLogoClick = onLogoClick
             )
         },
         bottomBar = {
@@ -122,13 +124,23 @@ fun NutritionScreen(
                 uiState = uiState,
                 sheetState = dailySheetState,
                 onDismiss = { viewModel.closeSheet() },
+                onTabChange = { viewModel.setAddFoodTab(it) },
+                onAiPromptChange = { viewModel.updateAiFoodPrompt(it) },
+                onAiEstimate = { viewModel.estimateFoodWithAi() },
+                onAiRegister = { viewModel.registerAiEstimatedFood() },
+                onAiUpdateValues = { name, grams, cal, p, c, f -> viewModel.updateEstimatedValues(name, grams, cal, p, c, f) },
+                onManualFormChange = { name, grams, cal, p, c, f -> viewModel.updateManualFoodForm(name, grams, cal, p, c, f) },
+                onManualRegister = { viewModel.registerManualFood() },
                 onSearchChange = { viewModel.updateSearchQuery(it) },
                 onSelectFood = { viewModel.selectFood(it) },
                 onClearSelectedFood = { viewModel.clearSelectedFood() },
                 onGramsChange = { viewModel.updateGrams(it) },
                 onManualValuesChange = { c, p, cb, f -> viewModel.updateManualValues(c, p, cb, f) },
                 onRegisterMeal = { viewModel.registerFoodIntake() },
-                onDeleteMeal = { viewModel.deleteFoodLog(it) }
+                onDeleteMeal = { viewModel.deleteFoodLog(it) },
+                onUseTypedQueryAsFood = { viewModel.useTypedQueryAsFood(it) },
+                onSwitchToAiWithQuery = { viewModel.switchToAiWithQuery(it) },
+                onSwitchToManualWithQuery = { viewModel.switchToManualWithQuery(it) }
             )
         }
 

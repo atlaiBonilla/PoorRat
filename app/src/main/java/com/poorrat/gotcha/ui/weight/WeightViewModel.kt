@@ -89,8 +89,8 @@ class WeightViewModel(
         if (sheet == WeightActiveSheet.EDIT_REGISTER_WEIGHT) {
             val cur = uiState.value.currentWeightKg
             val target = uiState.value.targetWeightKg
-            _inputWeightKg.value = String.format(Locale.US, "%.1f", cur)
-            _inputTargetWeightKg.value = String.format(Locale.US, "%.1f", target)
+            _inputWeightKg.value = if (cur > 0f) String.format(Locale.US, "%.1f", cur) else ""
+            _inputTargetWeightKg.value = if (target > 0f) String.format(Locale.US, "%.1f", target) else ""
             _inputNote.value = "En ayunas"
         }
     }

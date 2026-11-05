@@ -13,5 +13,11 @@ data class SupplementEntity(
     val alarmEnabled: Boolean = false,
     val alarmHour: Int = 8,
     val alarmMinute: Int = 0,
-    val lastTakenDate: String? = null
+    val lastTakenDate: String? = null,
+    val hasCalories: Boolean = false,
+    val isDailyConsumption: Boolean = false,
+    val calories: Int = 0,
+    val protein: Float = 0f,
+    val carbs: Float = 0f,
+    val fat: Float = 0f
 )

@@ -50,6 +50,9 @@ import com.poorrat.gotcha.data.local.entity.SupplementEntity
 import com.poorrat.gotcha.ui.supplements.SupplementsUiState
 import com.poorrat.gotcha.ui.theme.PoorRatTheme
 
+import androidx.compose.foundation.layout.displayCutoutPadding
+import androidx.compose.foundation.layout.statusBarsPadding
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DailyStackBottomSheet(
@@ -66,13 +69,21 @@ fun DailyStackBottomSheet(
         sheetState = sheetState,
         containerColor = colors.sheetBackground,
         dragHandle = {
-            Box(
+            Column(
                 modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .width(42.dp)
-                    .height(4.dp)
-                    .background(colors.dragHandle, CircleShape)
-            )
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .displayCutoutPadding()
+                    .padding(top = 28.dp, bottom = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .width(42.dp)
+                        .height(4.dp)
+                        .background(colors.dragHandle, CircleShape)
+                )
+            }
         }
     ) {
         Column(
@@ -318,6 +329,43 @@ private fun DailySupplementItemCard(
                         fontSize = 12.sp,
                         color = colors.textSecondary
                     )
+                }
+
+                if (supplement.hasCalories && supplement.calories > 0) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(colors.surfaceElevated)
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "${supplement.calories} kcal · ${supplement.protein.toInt()}g P",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = colors.textPrimary
+                            )
+                        }
+                        if (supplement.isDailyConsumption) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(colors.textPrimary.copy(alpha = 0.12f))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "Diario",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = colors.textPrimary
+                                )
+                            }
+                        }
+                    }
                 }
             }
 

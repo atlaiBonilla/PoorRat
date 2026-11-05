@@ -6,8 +6,10 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.poorrat.gotcha.MainActivity
 import com.poorrat.gotcha.R
 import com.poorrat.gotcha.alarm.SupplementAlarmScheduler
@@ -53,8 +55,20 @@ class SupplementAlarmReceiver : BroadcastReceiver() {
             "$dosage · $moment"
         } else dosage.ifBlank { moment }
 
+        val largeIcon = try {
+            BitmapFactory.decodeResource(context.resources, R.drawable.ic_poorrat_notification_large)
+        } catch (_: Exception) {
+            null
+        }
+
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_notification_poorrat)
+            .apply {
+                if (largeIcon != null) {
+                    setLargeIcon(largeIcon)
+                }
+            }
+            .setColor(ContextCompat.getColor(context, R.color.black))
             .setContentTitle("PoorRat · $supplementName")
             .setContentText("Es hora de tu toma: $subtext")
             .setPriority(NotificationCompat.PRIORITY_HIGH)

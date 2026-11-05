@@ -9,11 +9,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -79,13 +83,21 @@ fun CalorieCalculatorBottomSheet(
         sheetState = sheetState,
         containerColor = colors.sheetBackground,
         dragHandle = {
-            Box(
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .width(42.dp)
-                    .height(4.dp)
-                    .background(colors.sheetDragHandle, CircleShape)
-            )
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .displayCutoutPadding()
+                    .padding(top = 28.dp, bottom = 10.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(width = 44.dp, height = 5.dp)
+                        .clip(RoundedCornerShape(2.5.dp))
+                        .background(colors.sheetDragHandle)
+                )
+            }
         },
         modifier = modifier.testTag("calorie_calculator_bottom_sheet")
     ) {
@@ -93,7 +105,9 @@ fun CalorieCalculatorBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
-                .padding(bottom = 36.dp)
+                .navigationBarsPadding()
+                .imePadding()
+                .padding(bottom = 40.dp)
         ) {
             // Header: Title, Subtitle, Close Button
             item {
@@ -236,17 +250,18 @@ fun CalorieCalculatorBottomSheet(
                         label = if (uiState.calcAutoSyncWeight) "Peso (kg) 🔒" else "Peso (kg)",
                         value = uiState.calcWeightKg,
                         isReadOnly = uiState.calcAutoSyncWeight,
+                        isDecimal = true,
                         onValueChange = onWeightChange,
                         onIncrement = {
                             if (!uiState.calcAutoSyncWeight) {
-                                val cur = uiState.calcWeightKg.replace(',', '.').toFloatOrNull() ?: 70f
+                                val cur = uiState.calcWeightKg.replace(',', '.').toFloatOrNull() ?: 0f
                                 onWeightChange(String.format(Locale.US, "%.1f", cur + 0.5f))
                             }
                         },
                         onDecrement = {
                             if (!uiState.calcAutoSyncWeight) {
-                                val cur = uiState.calcWeightKg.replace(',', '.').toFloatOrNull() ?: 70f
-                                if (cur > 10f) onWeightChange(String.format(Locale.US, "%.1f", cur - 0.5f))
+                                val cur = uiState.calcWeightKg.replace(',', '.').toFloatOrNull() ?: 0f
+                                if (cur >= 0.5f) onWeightChange(String.format(Locale.US, "%.1f", cur - 0.5f))
                             }
                         },
                         modifier = Modifier.weight(1f)
@@ -256,14 +271,15 @@ fun CalorieCalculatorBottomSheet(
                         label = "Altura (cm)",
                         value = uiState.calcHeightCm,
                         isReadOnly = false,
+                        isDecimal = false,
                         onValueChange = onHeightChange,
                         onIncrement = {
-                            val cur = uiState.calcHeightCm.toIntOrNull() ?: 170
+                            val cur = uiState.calcHeightCm.toIntOrNull() ?: 0
                             onHeightChange((cur + 1).toString())
                         },
                         onDecrement = {
-                            val cur = uiState.calcHeightCm.toIntOrNull() ?: 170
-                            if (cur > 50) onHeightChange((cur - 1).toString())
+                            val cur = uiState.calcHeightCm.toIntOrNull() ?: 0
+                            if (cur > 0) onHeightChange((cur - 1).toString())
                         },
                         modifier = Modifier.weight(1f)
                     )
@@ -272,14 +288,15 @@ fun CalorieCalculatorBottomSheet(
                         label = "Edad",
                         value = uiState.calcAge,
                         isReadOnly = false,
+                        isDecimal = false,
                         onValueChange = onAgeChange,
                         onIncrement = {
-                            val cur = uiState.calcAge.toIntOrNull() ?: 25
+                            val cur = uiState.calcAge.toIntOrNull() ?: 0
                             onAgeChange((cur + 1).toString())
                         },
                         onDecrement = {
-                            val cur = uiState.calcAge.toIntOrNull() ?: 25
-                            if (cur > 10) onAgeChange((cur - 1).toString())
+                            val cur = uiState.calcAge.toIntOrNull() ?: 0
+                            if (cur > 0) onAgeChange((cur - 1).toString())
                         },
                         modifier = Modifier.weight(1f)
                     )
@@ -425,6 +442,7 @@ fun CalorieCalculatorBottomSheet(
                                         OutlinedTextField(
                                             value = uiState.calcAdjustmentCalories,
                                             onValueChange = onAdjustmentChange,
+                                            placeholder = { Text("", color = colors.textSecondary.copy(alpha = 0.4f)) },
                                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                             modifier = Modifier.width(72.dp),
                                             singleLine = true,
@@ -444,7 +462,7 @@ fun CalorieCalculatorBottomSheet(
                                                 modifier = Modifier
                                                     .size(16.dp)
                                                     .clickable {
-                                                        val cur = uiState.calcAdjustmentCalories.toIntOrNull() ?: 350
+                                                        val cur = uiState.calcAdjustmentCalories.toIntOrNull() ?: 0
                                                         onAdjustmentChange((cur + 50).toString())
                                                     }
                                             )
@@ -455,7 +473,7 @@ fun CalorieCalculatorBottomSheet(
                                                 modifier = Modifier
                                                     .size(16.dp)
                                                     .clickable {
-                                                        val cur = uiState.calcAdjustmentCalories.toIntOrNull() ?: 350
+                                                        val cur = uiState.calcAdjustmentCalories.toIntOrNull() ?: 0
                                                         if (cur >= 50) onAdjustmentChange((cur - 50).toString())
                                                     }
                                             )
@@ -627,6 +645,7 @@ private fun PhysicalInputBox(
     label: String,
     value: String,
     isReadOnly: Boolean = false,
+    isDecimal: Boolean = false,
     onValueChange: (String) -> Unit,
     onIncrement: () -> Unit,
     onDecrement: () -> Unit,
@@ -659,8 +678,9 @@ private fun PhysicalInputBox(
                     value = value,
                     onValueChange = onValueChange,
                     readOnly = isReadOnly,
-                    enabled = !isReadOnly,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    enabled = true,
+                    placeholder = { Text("", color = colors.textSecondary.copy(alpha = 0.4f)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = if (isDecimal) KeyboardType.Decimal else KeyboardType.Number),
                     modifier = Modifier.weight(1f),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(

@@ -46,6 +46,8 @@ data class PoorRatColors(
     val dragHandle: Color get() = sheetDragHandle
     val textMuted: Color get() = textTertiary
     val borderFocused: Color get() = textPrimary
+    val cardBackground: Color get() = surfaceCard
+    val buttonPrimary: Color get() = buttonPrimaryBg
 }
 
 val DarkPoorRatColors = PoorRatColors(

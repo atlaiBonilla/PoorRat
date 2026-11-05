@@ -1,0 +1,115 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidUserProfile(data, userId) {
+      return (!('userId' in data) || data.userId == userId) &&
+        (!('unitSystemWeight' in data) || data.unitSystemWeight in ['kg', 'lbs']) &&
+        (!('unitSystemHeight' in data) || data.unitSystemHeight in ['cm', 'ft']);
+    }
+
+    function isValidWeightLog(data, userId) {
+      return (!('userId' in data) || data.userId == userId) &&
+        (!('id' in data) || data.id is string) &&
+        data.weightKg is number && data.weightKg >= 0 && data.weightKg < 1000 &&
+        (!('dateString' in data) || data.dateString is string) &&
+        (!('note' in data) || data.note is string) &&
+        (!('timestampMillis' in data) || (data.timestampMillis is int || data.timestampMillis is number));
+    }
+
+    function isValidFoodLog(data, userId) {
+      return (!('userId' in data) || data.userId == userId) &&
+        (!('id' in data) || data.id is string) &&
+        data.foodName is string &&
+        (!('calories' in data) || (data.calories is int || data.calories is number));
+    }
+
+    function isValidSupplement(data, userId) {
+      return (!('userId' in data) || data.userId == userId) &&
+        (!('id' in data) || data.id is string) &&
+        data.name is string;
+    }
+
+    function isValidWorkoutPr(data, userId) {
+      return (!('userId' in data) || data.userId == userId) &&
+        (!('id' in data) || data.id is string) &&
+        data.exerciseName is string && data.exerciseName.size() > 0 &&
+        data.weightKg is number && data.weightKg >= 0 &&
+        (!('reps' in data) || ((data.reps is int || data.reps is number) && data.reps >= 1)) &&
+        (!('timestampMillis' in data) || (data.timestampMillis is int || data.timestampMillis is number));
+    }
+
+    function isValidWeeklyNutrition(data, userId) {
+      return (!('userId' in data) || data.userId == userId) &&
+        data.weekKey is string &&
+        data.totalCalories is number && data.totalCalories >= 0 &&
+        data.avgCaloriesPerDay is number && data.avgCaloriesPerDay >= 0;
+    }
+
+    function isValidRoutineDay(data, userId) {
+      return (!('userId' in data) || data.userId == userId) &&
+        (data.dayOfWeek is int || data.dayOfWeek is number) && data.dayOfWeek >= 1 && data.dayOfWeek <= 7 &&
+        data.routineName is string &&
+        data.bodyPart is string;
+    }
+
+    match /food_catalog/{foodId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated();
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidUserProfile(request.resource.data, userId);
+      allow delete: if isOwner(userId);
+
+      match /weight_logs/{logId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidWeightLog(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+
+      match /food_logs/{logId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidFoodLog(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+
+      match /supplements/{supplementId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidSupplement(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+
+      match /workout_prs/{prId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidWorkoutPr(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+
+      match /weekly_nutrition/{weekKey} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidWeeklyNutrition(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+
+      match /routine_days/{dayId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidRoutineDay(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

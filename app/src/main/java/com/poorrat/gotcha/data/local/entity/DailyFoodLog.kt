@@ -6,7 +6,10 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "daily_food_logs",
-    indices = [Index(value = ["dateString"])]
+    indices = [
+        Index(value = ["dateString"]),
+        Index(value = ["supplementId"])
+    ]
 )
 data class DailyFoodLog(
     @PrimaryKey(autoGenerate = true)
@@ -18,5 +21,6 @@ data class DailyFoodLog(
     val carbsGrams: Float,
     val fatGrams: Float,
     val timestampMillis: Long = System.currentTimeMillis(),
-    val dateString: String // YYYY-MM-DD
+    val dateString: String, // YYYY-MM-DD
+    val supplementId: Long? = null
 )

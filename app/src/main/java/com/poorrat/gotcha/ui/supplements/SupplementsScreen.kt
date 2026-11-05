@@ -51,7 +51,8 @@ import com.poorrat.gotcha.ui.theme.PoorRatTheme
 fun SupplementsScreen(
     viewModel: SupplementsViewModel,
     onNavigateToTab: (String) -> Unit,
-    onToggleTheme: (() -> Unit)? = null
+    onToggleTheme: (() -> Unit)? = null,
+    onLogoClick: (() -> Unit)? = null
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val colors = PoorRatTheme.colors
@@ -63,13 +64,13 @@ fun SupplementsScreen(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.background)
-            .statusBarsPadding(),
+            .background(colors.background),
         containerColor = colors.background,
         topBar = {
             PoorRatSupplementsTopBar(
                 onAddClick = { viewModel.openAddSupplementModal() },
-                onToggleTheme = onToggleTheme
+                onToggleTheme = onToggleTheme,
+                onLogoClick = onLogoClick
             )
         },
         bottomBar = {
@@ -135,11 +136,20 @@ fun SupplementsScreen(
             sheetState = addSupplementSheetState,
             uiState = uiState,
             onDismiss = { viewModel.closeAddSupplementModal() },
+            onTabChanged = { viewModel.onAddTabChanged(it) },
+            onAiPromptChanged = { viewModel.onAddAiPromptChanged(it) },
+            onEstimateAi = { viewModel.estimateSupplementWithAi() },
             onNameChanged = { viewModel.onAddNameChanged(it) },
             onDosageChanged = { viewModel.onAddDosageChanged(it) },
             onIntakeMomentChanged = { viewModel.onAddIntakeMomentChanged(it) },
             onAlarmEnabledChanged = { viewModel.onAddAlarmEnabledChanged(it) },
             onAlarmTimeChanged = { h, m -> viewModel.onAddAlarmTimeChanged(h, m) },
+            onHasCaloriesChanged = { viewModel.onAddHasCaloriesChanged(it) },
+            onIsDailyConsumptionChanged = { viewModel.onAddIsDailyConsumptionChanged(it) },
+            onCaloriesChanged = { viewModel.onAddCaloriesChanged(it) },
+            onProteinChanged = { viewModel.onAddProteinChanged(it) },
+            onCarbsChanged = { viewModel.onAddCarbsChanged(it) },
+            onFatChanged = { viewModel.onAddFatChanged(it) },
             onSubmit = { viewModel.submitAddSupplement() }
         )
     }

@@ -36,6 +36,7 @@ fun WorkoutScreen(
     onNavigateToSupplements: () -> Unit = {},
     onNavigateToShop: () -> Unit = {},
     onToggleTheme: (() -> Unit)? = null,
+    onLogoClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -49,7 +50,10 @@ fun WorkoutScreen(
 
     Scaffold(
         topBar = {
-            PoorRatWorkoutTopBar(onToggleTheme = onToggleTheme)
+            PoorRatWorkoutTopBar(
+                onToggleTheme = onToggleTheme,
+                onLogoClick = onLogoClick
+            )
         },
         bottomBar = {
             PoorRatBottomBar(

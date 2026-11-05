@@ -33,6 +33,8 @@ fun WeightScreen(
     onNavigateToSupplements: () -> Unit = {},
     onNavigateToShop: () -> Unit = {},
     onToggleTheme: (() -> Unit)? = null,
+    onLogoClick: (() -> Unit)? = null,
+    weightUnit: com.poorrat.gotcha.data.preferences.WeightUnit = com.poorrat.gotcha.data.preferences.WeightUnit.KG,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -45,7 +47,8 @@ fun WeightScreen(
         topBar = {
             PoorRatWeightTopBar(
                 onAddClick = { viewModel.openSheet(WeightActiveSheet.EDIT_REGISTER_WEIGHT) },
-                onToggleTheme = onToggleTheme
+                onToggleTheme = onToggleTheme,
+                onLogoClick = onLogoClick
             )
         },
         bottomBar = {
@@ -75,7 +78,8 @@ fun WeightScreen(
             WeightSummaryCard(
                 currentWeightKg = uiState.currentWeightKg,
                 targetWeightKg = uiState.targetWeightKg,
-                differenceKg = uiState.differenceKg
+                differenceKg = uiState.differenceKg,
+                unit = weightUnit
             )
 
             Spacer(modifier = Modifier.height(20.dp))

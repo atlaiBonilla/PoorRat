@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -52,11 +53,15 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.poorrat.gotcha.R
 import com.poorrat.gotcha.ui.nutrition.components.PoorRatBottomBar
 import com.poorrat.gotcha.ui.theme.PoorRatTheme
+
+import androidx.compose.foundation.clickable
 
 data class ShopProduct(
     val id: Long,
@@ -68,7 +73,8 @@ data class ShopProduct(
 @Composable
 fun ShopScreen(
     onNavigateToTab: (String) -> Unit,
-    onToggleTheme: (() -> Unit)? = null
+    onToggleTheme: (() -> Unit)? = null,
+    onLogoClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val colors = PoorRatTheme.colors
@@ -102,23 +108,26 @@ fun ShopScreen(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.background)
-            .statusBarsPadding(),
+            .background(colors.background),
         containerColor = colors.background,
         topBar = {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 14.dp)
+                    .statusBarsPadding()
+                    .displayCutoutPadding()
+                    .padding(top = 18.dp, bottom = 10.dp)
             ) {
+                val logoResId = if (colors.isDark) R.drawable.logo_poorrat_dark else R.drawable.logo_poorrat_light
                 Image(
-                    painter = painterResource(id = R.drawable.logo_poorrat),
-                    contentDescription = "PoorRat Logo",
+                    painter = painterResource(id = logoResId),
+                    contentDescription = "PoorRat Logo - Ajustes",
                     modifier = Modifier
-                        .height(30.dp)
-                        .align(Alignment.CenterStart),
-                    contentScale = ContentScale.Fit,
-                    colorFilter = logoColorFilter
+                        .align(Alignment.CenterStart)
+                        .padding(start = 20.dp)
+                        .height(32.dp)
+                        .then(if (onLogoClick != null) Modifier.clickable { onLogoClick() } else Modifier),
+                    contentScale = ContentScale.Fit
                 )
 
                 Text(
@@ -128,25 +137,14 @@ fun ShopScreen(
                     letterSpacing = 2.sp,
                     color = colors.textPrimary,
                     fontFamily = FontFamily.SansSerif,
-                    modifier = Modifier.align(Alignment.Center)
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 76.dp)
+                        .align(Alignment.Center)
                 )
-
-                if (onToggleTheme != null) {
-                    IconButton(
-                        onClick = onToggleTheme,
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .size(36.dp)
-                            .testTag("shop_theme_toggle_button")
-                    ) {
-                        Icon(
-                            imageVector = if (colors.isDark) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
-                            contentDescription = "Cambiar tema",
-                            tint = colors.textPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
             }
         },
         bottomBar = {

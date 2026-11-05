@@ -1,5 +1,6 @@
 package com.poorrat.gotcha.ui.nutrition
 
+import com.poorrat.gotcha.data.ai.EstimatedFoodResult
 import com.poorrat.gotcha.data.local.entity.DailyFoodLog
 import com.poorrat.gotcha.data.local.entity.FoodItem
 import com.poorrat.gotcha.data.local.entity.UserNutritionConfig
@@ -26,17 +27,32 @@ data class NutritionUiState(
     val todayProteinGrams: Float = 0f,
     val todayCarbsGrams: Float = 0f,
     val todayFatGrams: Float = 0f,
-    val remainingCalories: Int = 2200,
+    val remainingCalories: Int = 0,
     val progressPercent: Int = 0,
     val weekTotalCalories: Int = 0,
-    val weekTargetCalories: Int = 15400,
+    val weekTargetCalories: Int = 0,
     val weekAverageCalories: Int = 0,
     val weeklyDays: List<WeeklyDayData> = emptyList(),
     
     // Bottom Sheet Visibility
     val activeSheet: ActiveBottomSheet = ActiveBottomSheet.NONE,
 
-    // Modal 1: Daily intake state
+    // Modal 1: Daily intake add food tabs & AI
+    val activeAddFoodTab: Int = 0, // 0 = Catálogo, 1 = IA, 2 = Manual
+    val aiFoodPrompt: String = "",
+    val isAiEstimating: Boolean = false,
+    val aiEstimatedResult: EstimatedFoodResult? = null,
+    val aiErrorMessage: String? = null,
+
+    // Manual Food Form
+    val manualFoodName: String = "",
+    val manualGrams: String = "",
+    val manualCaloriesTotal: String = "",
+    val manualProteinTotal: String = "",
+    val manualCarbsTotal: String = "",
+    val manualFatTotal: String = "",
+
+    // Catalog Search
     val foodSearchQuery: String = "",
     val catalogSearchResults: List<FoodItem> = emptyList(),
     val selectedFoodItem: FoodItem? = null,
@@ -48,15 +64,15 @@ data class NutritionUiState(
 
     // Modal 3: Calorie Calculator state
     val calcAutoSyncWeight: Boolean = true,
-    val latestLoggedWeight: Float = 74.5f,
+    val latestLoggedWeight: Float = 0f,
     val calcSex: String = "MALE", // "MALE" or "FEMALE"
-    val calcWeightKg: String = "74.5",
-    val calcHeightCm: String = "178",
-    val calcAge: String = "26",
+    val calcWeightKg: String = "",
+    val calcHeightCm: String = "",
+    val calcAge: String = "",
     val calcActivityLevel: String = "MODERATE", // "SEDENTARY", "LIGHT", "MODERATE", "HIGH"
     val calcGoalType: String = "DEFICIT", // "DEFICIT", "MAINTENANCE", "SURPLUS"
-    val calcAdjustmentCalories: String = "350",
-    val previewBmr: Int = 1733,
-    val previewTdee: Int = 2686,
-    val previewTarget: Int = 2336
+    val calcAdjustmentCalories: String = "",
+    val previewBmr: Int = 0,
+    val previewTdee: Int = 0,
+    val previewTarget: Int = 0
 )

@@ -30,6 +30,9 @@ interface NutritionDao {
     @Query("SELECT * FROM food_catalog ORDER BY name ASC")
     fun getAllFoods(): Flow<List<FoodItem>>
 
+    @Query("SELECT * FROM food_catalog ORDER BY name ASC")
+    suspend fun getAllFoodsSync(): List<FoodItem>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFood(food: FoodItem): Long
 
@@ -55,6 +58,12 @@ interface NutritionDao {
     @Query("DELETE FROM daily_food_logs WHERE id = :id")
     suspend fun deleteLogById(id: Long)
 
+    @Query("DELETE FROM daily_food_logs WHERE dateString = :dateString AND (supplementId = :supplementId OR foodName = :foodName OR foodName = :rawName)")
+    suspend fun deleteSupplementLog(dateString: String, supplementId: Long, foodName: String, rawName: String)
+
+    @Query("DELETE FROM daily_food_logs WHERE supplementId = :supplementId")
+    suspend fun deleteLogsBySupplementId(supplementId: Long)
+
     @Query("SELECT COUNT(*) FROM daily_food_logs")
     suspend fun getLogCount(): Int
 
@@ -79,4 +88,16 @@ interface NutritionDao {
 
     @Query("SELECT COUNT(*) FROM weight_logs")
     suspend fun getWeightLogCount(): Int
+
+    @Query("SELECT * FROM daily_food_logs ORDER BY timestampMillis DESC")
+    suspend fun getAllFoodLogsSync(): List<DailyFoodLog>
+
+    @Query("DELETE FROM daily_food_logs")
+    suspend fun clearAllFoodLogs()
+
+    @Query("SELECT * FROM weight_logs ORDER BY timestampMillis DESC")
+    suspend fun getAllWeightLogsSync(): List<WeightLog>
+
+    @Query("DELETE FROM weight_logs")
+    suspend fun clearAllWeightLogs()
 }

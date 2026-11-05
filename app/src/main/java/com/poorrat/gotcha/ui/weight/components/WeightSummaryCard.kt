@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.poorrat.gotcha.data.preferences.WeightUnit
 import com.poorrat.gotcha.ui.theme.PoorRatTheme
 import java.util.Locale
 
@@ -30,9 +31,15 @@ fun WeightSummaryCard(
     currentWeightKg: Float,
     targetWeightKg: Float,
     differenceKg: Float,
+    unit: WeightUnit = WeightUnit.KG,
     modifier: Modifier = Modifier
 ) {
     val colors = PoorRatTheme.colors
+
+    val displayCurrent = if (unit == WeightUnit.LB) currentWeightKg * 2.20462f else currentWeightKg
+    val displayTarget = if (unit == WeightUnit.LB) targetWeightKg * 2.20462f else targetWeightKg
+    val displayDiff = if (unit == WeightUnit.LB) differenceKg * 2.20462f else differenceKg
+    val unitSymbol = unit.symbol
 
     Card(
         modifier = modifier
@@ -66,7 +73,7 @@ fun WeightSummaryCard(
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(
-                        text = String.format(Locale.US, "%.1f", currentWeightKg),
+                        text = String.format(Locale.US, "%.1f", displayCurrent),
                         fontSize = 32.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = colors.textPrimary,
@@ -74,7 +81,7 @@ fun WeightSummaryCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "kg",
+                        text = unitSymbol,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                         color = colors.textSecondary,
@@ -82,10 +89,10 @@ fun WeightSummaryCard(
                     )
                 }
                 Spacer(modifier = Modifier.height(6.dp))
-                val diffFormatted = if (differenceKg > 0f) {
-                    "+${String.format(Locale.US, "%.1f", differenceKg)} kg meta"
+                val diffFormatted = if (displayDiff > 0f) {
+                    "+${String.format(Locale.US, "%.1f", displayDiff)} $unitSymbol meta"
                 } else {
-                    "${String.format(Locale.US, "%.1f", differenceKg)} kg meta"
+                    "${String.format(Locale.US, "%.1f", displayDiff)} $unitSymbol meta"
                 }
                 Text(
                     text = diffFormatted,
@@ -119,7 +126,7 @@ fun WeightSummaryCard(
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(
-                        text = String.format(Locale.US, "%.1f", targetWeightKg),
+                        text = String.format(Locale.US, "%.1f", displayTarget),
                         fontSize = 32.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = colors.textPrimary,
@@ -127,7 +134,7 @@ fun WeightSummaryCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "kg",
+                        text = unitSymbol,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                         color = colors.textSecondary,

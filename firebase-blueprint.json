@@ -1,0 +1,189 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User preferences, nutrition targets, target weight and profile data",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The user ID matching Firebase Auth UID" },
+        "email": { "type": "string", "description": "User email address" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "unitSystemWeight": { "type": "string", "description": "Preferred weight unit (kg or lbs)" },
+        "unitSystemHeight": { "type": "string", "description": "Preferred height unit (cm or ft)" },
+        "weightKg": { "type": "number", "description": "Current body weight in kg" },
+        "targetWeightKg": { "type": "number", "description": "Goal/Target weight in kg" },
+        "autoSyncWeight": { "type": "boolean", "description": "Auto-sync TDEE on weight change" },
+        "heightCm": { "type": "integer", "description": "User height in cm" },
+        "age": { "type": "integer", "description": "User age" },
+        "sex": { "type": "string", "description": "MALE or FEMALE" },
+        "activityLevel": { "type": "string", "description": "Activity factor" },
+        "goalType": { "type": "string", "description": "DEFICIT, MAINTENANCE, or SURPLUS" },
+        "calorieAdjustment": { "type": "integer", "description": "Calorie adjustment" },
+        "bmr": { "type": "integer", "description": "Basal metabolic rate" },
+        "tdee": { "type": "integer", "description": "Total daily energy expenditure" },
+        "dailyCalorieTarget": { "type": "integer", "description": "Calculated or custom daily calorie goal" },
+        "updatedAt": { "type": "integer", "description": "Last update timestamp in milliseconds" }
+      },
+      "required": ["userId"]
+    },
+    "WeightLog": {
+      "title": "WeightLog",
+      "description": "Logged body weight entry for history tracking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique log ID" },
+        "userId": { "type": "string", "description": "User ID owning this entry" },
+        "weightKg": { "type": "number", "description": "Weight in kilograms" },
+        "note": { "type": "string", "description": "Condition note for weight measurement" },
+        "dateString": { "type": "string", "description": "Date formatted as YYYY-MM-DD" },
+        "timestampMillis": { "type": "integer", "description": "Measurement timestamp in milliseconds" }
+      },
+      "required": ["userId", "weightKg", "timestampMillis"]
+    },
+    "FoodLog": {
+      "title": "FoodLog",
+      "description": "Daily consumed food item with macronutrients and portion",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique food log ID" },
+        "userId": { "type": "string", "description": "User ID owning this entry" },
+        "foodName": { "type": "string", "description": "Name of the food or dish" },
+        "gramsConsumed": { "type": "number", "description": "Amount consumed in grams" },
+        "calories": { "type": "integer", "description": "Calories for the portion" },
+        "proteinGrams": { "type": "number", "description": "Protein in grams" },
+        "carbsGrams": { "type": "number", "description": "Carbohydrates in grams" },
+        "fatGrams": { "type": "number", "description": "Fat in grams" },
+        "dateString": { "type": "string", "description": "Date formatted as YYYY-MM-DD" },
+        "timestampMillis": { "type": "integer", "description": "Timestamp in milliseconds" },
+        "supplementId": { "type": "integer", "description": "Optional linked supplement ID" }
+      },
+      "required": ["userId", "foodName", "calories", "dateString"]
+    },
+    "Supplement": {
+      "title": "Supplement",
+      "description": "Configured user supplement, dosage, alarm, and daily nutrition contribution",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique supplement ID" },
+        "userId": { "type": "string", "description": "User ID owning this supplement" },
+        "name": { "type": "string", "description": "Name of the supplement" },
+        "dosage": { "type": "string", "description": "Dosage string" },
+        "intakeMoment": { "type": "string", "description": "Timing/moment of intake" },
+        "alarmEnabled": { "type": "boolean", "description": "Alarm active toggle" },
+        "alarmHour": { "type": "integer", "description": "Alarm hour" },
+        "alarmMinute": { "type": "integer", "description": "Alarm minute" },
+        "lastTakenDate": { "type": "string", "description": "Date last marked as taken" },
+        "hasCalories": { "type": "boolean", "description": "Whether it provides calories" },
+        "isDailyConsumption": { "type": "boolean", "description": "Whether it auto-links to daily food consumption" },
+        "calories": { "type": "integer", "description": "Calorie contribution" },
+        "protein": { "type": "number", "description": "Protein contribution in grams" },
+        "carbs": { "type": "number", "description": "Carbs contribution in grams" },
+        "fat": { "type": "number", "description": "Fat contribution in grams" },
+        "updatedAt": { "type": "integer", "description": "Timestamp in milliseconds" }
+      },
+      "required": ["userId", "name"]
+    },
+    "WorkoutPr": {
+      "title": "WorkoutPr",
+      "description": "Personal Record for a specific workout exercise",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique record identifier" },
+        "userId": { "type": "string", "description": "User ID owning this PR" },
+        "exerciseName": { "type": "string", "description": "Name of the exercise" },
+        "weightKg": { "type": "number", "description": "Achieved weight in kg" },
+        "reps": { "type": "integer", "description": "Number of repetitions performed" },
+        "dateString": { "type": "string", "description": "Date formatted as YYYY-MM-DD" },
+        "timestampMillis": { "type": "integer", "description": "Timestamp in milliseconds" }
+      },
+      "required": ["userId", "exerciseName", "weightKg", "reps", "timestampMillis"]
+    },
+    "WeeklyNutrition": {
+      "title": "WeeklyNutrition",
+      "description": "Weekly nutrition totals and averages for a chosen week",
+      "type": "object",
+      "properties": {
+        "weekKey": { "type": "string", "description": "Identifier for the week, e.g. 2026-W44" },
+        "userId": { "type": "string", "description": "User ID owning this summary" },
+        "startDate": { "type": "string", "description": "Week start date YYYY-MM-DD" },
+        "endDate": { "type": "string", "description": "Week end date YYYY-MM-DD" },
+        "totalCalories": { "type": "number", "description": "Total calories consumed during the week" },
+        "avgCaloriesPerDay": { "type": "number", "description": "Daily average calorie intake" },
+        "totalProtein": { "type": "number", "description": "Total protein consumed in grams" },
+        "totalCarbs": { "type": "number", "description": "Total carbohydrates consumed in grams" },
+        "totalFat": { "type": "number", "description": "Total fat consumed in grams" },
+        "daysLogged": { "type": "integer", "description": "Number of days with logged meals" },
+        "updatedAt": { "type": "integer", "description": "Timestamp of last calculation" }
+      },
+      "required": ["weekKey", "userId", "totalCalories", "avgCaloriesPerDay"]
+    },
+    "RoutineDay": {
+      "title": "RoutineDay",
+      "description": "Configured routine and list of exercises for a day of the week",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Day of week ID (e.g., '1' to '7')" },
+        "userId": { "type": "string", "description": "User ID owning this routine" },
+        "dayOfWeek": { "type": "integer", "description": "Day number 1 to 7 (1=Monday .. 7=Sunday)" },
+        "dayLabel": { "type": "string", "description": "Label of the day" },
+        "routineName": { "type": "string", "description": "Name of the routine" },
+        "bodyPart": { "type": "string", "description": "Muscle group or Rest" },
+        "exercises": {
+          "type": "array",
+          "description": "List of configured exercises for this day",
+          "items": { "type": "object" }
+        },
+        "updatedAt": { "type": "integer", "description": "Timestamp in milliseconds" }
+      },
+      "required": ["userId", "dayOfWeek", "routineName", "bodyPart"]
+    },
+    "FoodCatalogItem": {
+      "title": "FoodCatalogItem",
+      "description": "Nutritional catalog item with macronutrients per 100g",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique food item ID" },
+        "name": { "type": "string", "description": "Name of the food" },
+        "caloriesPer100g": { "type": "number", "description": "Calories per 100g" },
+        "proteinPer100g": { "type": "number", "description": "Protein in grams per 100g" },
+        "carbsPer100g": { "type": "number", "description": "Carbohydrates in grams per 100g" },
+        "fatPer100g": { "type": "number", "description": "Fat in grams per 100g" }
+      },
+      "required": ["name", "caloriesPer100g"]
+    }
+  },
+  "firestore": {
+    "/food_catalog/{foodId}": {
+      "schema": "FoodCatalogItem",
+      "description": "Global catalog of foods and nutritional values per 100g"
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Profile, goal targets, and measurement settings for each user"
+    },
+    "/users/{userId}/weight_logs/{logId}": {
+      "schema": "WeightLog",
+      "description": "Subcollection of weight entries for user"
+    },
+    "/users/{userId}/food_logs/{logId}": {
+      "schema": "FoodLog",
+      "description": "Subcollection of daily and weekly food consumption entries"
+    },
+    "/users/{userId}/supplements/{supplementId}": {
+      "schema": "Supplement",
+      "description": "Subcollection of configured supplements and nutritional contributions"
+    },
+    "/users/{userId}/workout_prs/{prId}": {
+      "schema": "WorkoutPr",
+      "description": "Subcollection of workout PRs for user"
+    },
+    "/users/{userId}/weekly_nutrition/{weekKey}": {
+      "schema": "WeeklyNutrition",
+      "description": "Subcollection of weekly nutrition totals for user"
+    },
+    "/users/{userId}/routine_days/{dayId}": {
+      "schema": "RoutineDay",
+      "description": "Subcollection of configured routine days and exercises for user"
+    }
+  }
+}
