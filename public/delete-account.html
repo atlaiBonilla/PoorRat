@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eliminación de Cuenta y Datos | PoorRat (com.poorrat.gotchadev)</title>
+  <meta name="description" content="Portal oficial para solicitar la eliminación de cuenta y supresión de datos de usuario de PoorRat en cumplimiento con las políticas de Google Play Store.">
+  <link rel="icon" type="image/png" href="assets/logo_poorrat.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <img src="assets/logo_poorrat.png" alt="PoorRat Logo" class="logo">
+        <span>PoorRat</span>
+        <span class="brand-badge">Eliminación</span>
+      </a>
+
+      <button class="mobile-menu-btn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+
+      <ul class="nav-links">
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="privacy.html">Política de Privacidad</a></li>
+        <li><a href="delete-account.html" class="active">Eliminar Cuenta</a></li>
+        <li><a href="terms.html">Términos de Servicio</a></li>
+        <li><a href="data-safety-guide.html">Guía Play Console</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button id="theme-toggle-btn" class="icon-btn" aria-label="Alternar tema">
+          <span class="theme-icon">☀️</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <section class="hero" style="padding-top: 1.5rem; padding-bottom: 1.5rem;">
+      <div class="hero-pill">
+        <span class="dot" style="background: var(--danger-color); box-shadow: 0 0 10px var(--danger-color);"></span>
+        <span>Google Play Account & Data Deletion Compliance</span>
+      </div>
+
+      <h1>
+        Solicitud de Eliminación de <br>
+        <span class="gradient-text">Cuenta y Datos Personales</span>
+      </h1>
+
+      <p class="lead">
+        En <strong>PoorRat</strong> (<code>com.poorrat.gotchadev</code>) respetamos el control absoluto de los usuarios sobre sus datos. Esta página constituye el recurso web externo oficial requerido por Google Play para solicitar la eliminación definitiva de tu cuenta y todos los registros asociados.
+      </p>
+    </section>
+
+    <!-- Callout explaining permanent deletion -->
+    <div class="callout warning">
+      <strong>⚠️ Aviso Importante sobre la Eliminación Permanente:</strong>
+      <p style="margin: 0.5rem 0 0;">
+        La eliminación de tu cuenta es irreversible. No realizamos un simple "bloqueo" o desactivación temporal: borramos definitivamente tu usuario en Firebase Authentication y todos tus documentos en Firebase Firestore (pesajes, ingestas calóricas, suplementos y rutinas).
+      </p>
+    </div>
+
+    <!-- Methods to Delete Account -->
+    <div class="doc-content" style="margin-top: 2rem;">
+      <h2>Dos Métodos Disponibles para Borrar tu Cuenta</h2>
+
+      <div class="cards-grid" style="margin: 1.5rem 0 2rem;">
+        <!-- Method 1: In App -->
+        <div class="feature-card" style="border-color: rgba(0, 230, 118, 0.4);">
+          <div class="card-icon" style="color: var(--accent-color);">⚡</div>
+          <h3>Método 1: Directo desde la App (Inmediato)</h3>
+          <p>
+            Si tienes acceso a tu teléfono, puedes borrar tu cuenta de forma instantánea y en un solo paso:
+          </p>
+          <ol style="margin-left: 1.25rem; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">
+            <li>Abre la aplicación <strong>PoorRat</strong> en tu dispositivo Android.</li>
+            <li>Toca el <strong>logo de PoorRat</strong> en la barra superior para abrir el menú de Ajustes.</li>
+            <li>Desplázate hasta la sección <strong>"GESTIÓN DE CUENTA Y DATOS"</strong>.</li>
+            <li>Pulsa el botón rojo <strong>"Eliminar Cuenta y Todos los Datos"</strong>.</li>
+            <li>Confirma en el cuadro de diálogo. La app purgará tus datos de inmediato y cerrará la sesión.</li>
+          </ol>
+        </div>
+
+        <!-- Method 2: Web / Email -->
+        <div class="feature-card" style="border-color: rgba(41, 121, 255, 0.4);">
+          <div class="card-icon" style="color: var(--accent-blue);">🌐</div>
+          <h3>Método 2: Solicitud Externa vía Web o Correo</h3>
+          <p>
+            Si ya desinstalaste la aplicación o no tienes acceso a tu dispositivo, puedes enviar tu solicitud mediante el formulario que se encuentra a continuación o escribiendo a:
+          </p>
+          <p style="font-family: var(--font-mono); font-size: 0.9rem; margin: 0.5rem 0;">
+            <a href="mailto:support@gotchadev.com" style="color: var(--accent-color); text-decoration: none;">support@gotchadev.com</a>
+          </p>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Plazo de procesamiento: máximo 30 días naturales. Se enviará confirmación a tu correo.
+          </p>
+        </div>
+      </div>
+
+      <!-- Web Request Form -->
+      <section id="web-form-section">
+        <h2>Formulario de Solicitud de Borrado Web</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Completa el siguiente formulario indicando el correo electrónico exacto de la cuenta de Google con la que iniciabas sesión en PoorRat:
+        </p>
+
+        <div class="interactive-card">
+          <form id="account-deletion-form">
+            <div class="form-group">
+              <label for="delete-email">Correo Electrónico Registrado en PoorRat *</label>
+              <input type="email" id="delete-email" class="form-control" placeholder="ejemplo@gmail.com" required>
+            </div>
+
+            <div class="form-group">
+              <label for="delete-reason">Motivo de la Solicitud (Opcional)</label>
+              <textarea id="delete-reason" class="form-control" placeholder="Ayúdanos a mejorar contándonos brevemente el motivo de tu baja..."></textarea>
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 0.75rem; align-items: flex-start; margin-top: 1.25rem;">
+              <input type="checkbox" id="delete-confirm-check" style="margin-top: 0.25rem; transform: scale(1.15); cursor: pointer;" required>
+              <label for="delete-confirm-check" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+                Entiendo y acepto que esta acción eliminará de forma irreversible e irrevocable todos mis pesajes, fotos, datos nutricionales, planes de entrenamiento y la cuenta vinculada a <code>com.poorrat.gotchadev</code>.
+              </label>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+              <button type="submit" class="btn-danger">
+                Solicitar Eliminación Definitiva de Cuenta y Datos
+              </button>
+            </div>
+          </form>
+
+          <!-- Feedback Box -->
+          <div id="delete-feedback" style="display: none; margin-top: 1.5rem;"></div>
+        </div>
+      </section>
+
+      <!-- Data Details Table -->
+      <section style="margin-top: 3rem;">
+        <h2>¿Qué Datos Específicos se Borran y Cuáles se Retienen?</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+          En cumplimiento con la directriz de Transparencia de Datos de Google Play, detallamos el ciclo de vida de cada elemento:
+        </p>
+
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tipo de Información</th>
+                <th>Destino tras la Solicitud</th>
+                <th>Periodo de Retención</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Perfil de Usuario (Firebase Auth)</strong></td>
+                <td>Eliminación permanente e inmediata de la cuenta.</td>
+                <td>0 días (borrado inmediato).</td>
+              </tr>
+              <tr>
+                <td><strong>Historial de Pesajes Corporales</strong></td>
+                <td>Eliminación permanente de la subcolección <code>/users/{uid}/weight_logs</code>.</td>
+                <td>0 días (borrado permanente).</td>
+              </tr>
+              <tr>
+                <td><strong>Registros Nutricionales y Alimentos</strong></td>
+                <td>Eliminación permanente de <code>/users/{uid}/food_logs</code> y metas calóricas.</td>
+                <td>0 días (borrado permanente).</td>
+              </tr>
+              <tr>
+                <td><strong>Suplementos y Alarmas Programadas</strong></td>
+                <td>Eliminación permanente de <code>/users/{uid}/supplements</code> y cancelación de alarmas en el dispositivo.</td>
+                <td>0 días (borrado permanente).</td>
+              </tr>
+              <tr>
+                <td><strong>Rutinas de Ejercicios y Récords (PRs)</strong></td>
+                <td>Eliminación permanente de <code>/routine_days</code> y <code>/workout_prs</code>.</td>
+                <td>0 días (borrado permanente).</td>
+              </tr>
+              <tr>
+                <td><strong>Datos retenidos por motivos legales</strong></td>
+                <td>Ninguno. PoorRat no realiza cobros ni transacciones financieras que obliguen a retener registros fiscales o tributarios.</td>
+                <td>No aplica.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Support section -->
+      <section style="margin-top: 2.5rem;">
+        <h3>¿Necesitas Ayuda o Tienes Preguntas?</h3>
+        <p style="color: var(--text-secondary);">
+          Si tienes algún inconveniente con el proceso o deseas verificar que tus datos hayan sido completamente erradicados, puedes contactar en cualquier momento con nuestro equipo a través de:
+        </p>
+        <p>
+          <strong>Email:</strong> <a href="mailto:support@gotchadev.com" style="color: var(--accent-color);">support@gotchadev.com</a> | 
+          <strong>Referencia:</strong> PoorRat Android Account Deletion
+        </p>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-col">
+        <div class="brand" style="margin-bottom: 0.85rem;">
+          <img src="assets/logo_poorrat.png" alt="PoorRat Logo" class="logo">
+          <span>PoorRat</span>
+        </div>
+        <p>
+          Recurso web oficial para la eliminación de cuentas de PoorRat (com.poorrat.gotchadev).
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul class="footer-links">
+          <li><a href="privacy.html">Política de Privacidad</a></li>
+          <li><a href="delete-account.html">Eliminación de Cuenta</a></li>
+          <li><a href="terms.html">Términos de Servicio</a></li>
+          <li><a href="data-safety-guide.html">Guía Play Console</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Contacto Directo</h4>
+        <p><a href="mailto:support@gotchadev.com" style="color: var(--accent-color); text-decoration: none;">support@gotchadev.com</a></p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; 2026 PoorRat & GotchaDev. Recurso Web de Cumplimiento de Políticas de Google Play.</span>
+      <span>HTTPS Seguro</span>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
+

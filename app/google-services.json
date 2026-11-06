@@ -1,0 +1,116 @@
+{
+  "project_info": {
+    "project_number": "370202027084",
+    "project_id": "gen-lang-client-0502011898",
+    "storage_bucket": "gen-lang-client-0502011898.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:370202027084:android:7aa89c018473a3f22840e9",
+        "android_client_info": {
+          "package_name": "com.poorrat.gotcha"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "370202027084-5k6hnkrnsrj39mu1g4e0i6u62350snfi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.poorrat.gotcha",
+            "certificate_hash": "5024cd3392f3bd4dcd9aa7b8f26483cd866eb1d3"
+          }
+        },
+        {
+          "client_id": "370202027084-5mbq1esaip9gs9kr7askl4s8t95d5hpt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.poorrat.gotcha",
+            "certificate_hash": "041770005f9570cbaf5d71a50e6f9d9ed73d7342"
+          }
+        },
+        {
+          "client_id": "370202027084-bjm64220a950f3tuptrcd58scn5m3p2n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.poorrat.gotcha",
+            "certificate_hash": "d4bc90df3f559c6d9cb597d274cf8a59597ee4c0"
+          }
+        },
+        {
+          "client_id": "370202027084-vm13oql1pgti6rqch2ptp2c4usa5gmj3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.poorrat.gotcha",
+            "certificate_hash": "8e1ea404c40425007e4b77545e46dce019164ed0"
+          }
+        },
+        {
+          "client_id": "370202027084-s6d6nsta3gkgo8h37cndfc87h02960bn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCH72Oq5kxFyNUpHT5WYNU3oLjTTY3Qidc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "370202027084-s6d6nsta3gkgo8h37cndfc87h02960bn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:370202027084:android:f129e6a3f50ca2e52840e9",
+        "android_client_info": {
+          "package_name": "com.poorrat.gotchadev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "370202027084-7o9kqap2dlj6aqhm1ht560rereqahn8p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.poorrat.gotchadev",
+            "certificate_hash": "63cbb5ab23b3496edf8c64cb567d4e06159545e2"
+          }
+        },
+        {
+          "client_id": "370202027084-m8rhs0bhnjkuq9gtc51tq9ae2dl5gtvd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.poorrat.gotchadev",
+            "certificate_hash": "08fa0cfce2652e97b031770e62a7f3ce224f4f82"
+          }
+        },
+        {
+          "client_id": "370202027084-s6d6nsta3gkgo8h37cndfc87h02960bn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCH72Oq5kxFyNUpHT5WYNU3oLjTTY3Qidc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "370202027084-s6d6nsta3gkgo8h37cndfc87h02960bn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -6,15 +6,15 @@ plugins {
 }
 
 android {
-    namespace = "com.poorrat.gotcha"
+    namespace = "com.poorrat.gotchadev"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.poorrat.gotcha"
+        applicationId = "com.poorrat.gotchadev"
         minSdk = 29
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -26,6 +26,12 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        create("releaseConfig") {
+            storeFile = file("${rootDir}/release.keystore")
+            storePassword = "poorratreleasepass"
+            keyAlias = "poorratreleasekey"
+            keyPassword = "poorratreleasepass"
+        }
     }
 
     buildTypes {
@@ -33,7 +39,16 @@ android {
             signingConfig = signingConfigs.getByName("debugConfig")
         }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "src/main/keepRules/rules.keep"
+            )
+            signingConfig = signingConfigs.getByName("releaseConfig")
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
+            }
         }
     }
     compileOptions {
@@ -70,6 +85,7 @@ dependencies {
     implementation(libs.firebase.ai)
     implementation(libs.firebase.appcheck)
     implementation(libs.firebase.appcheck.debug)
+    implementation(libs.firebase.appcheck.playintegrity)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services)
     implementation(libs.googleid)
