@@ -24,11 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.CloudDone
-import androidx.compose.material.icons.filled.CloudSync
-import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Height
@@ -191,7 +187,7 @@ fun SettingsBottomSheet(
                             color = colors.textPrimary
                         )
                         Text(
-                            text = "Preferencias, Unidades y Nube",
+                            text = "Preferencias y Unidades",
                             fontSize = 11.sp,
                             color = colors.textSecondary
                         )
@@ -258,22 +254,6 @@ fun SettingsBottomSheet(
                             fontSize = 12.sp,
                             color = colors.textSecondary
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.CloudDone,
-                                contentDescription = null,
-                                tint = Color(0xFF4CAF50),
-                                modifier = Modifier.size(13.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "Firebase Cloud Activo",
-                                fontSize = 11.sp,
-                                color = Color(0xFF4CAF50),
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
                     }
                 }
             }
@@ -654,7 +634,7 @@ fun SettingsBottomSheet(
                     },
                     text = {
                         Text(
-                            text = "Esta acción es definitiva e irrevocable. Se borrarán todos tus pesajes, rutinas, alimentos y datos de la nube en Firebase y de este teléfono. No se podrán recuperar.",
+                            text = "Esta acción es definitiva e irrevocable. Se borrarán todos tus pesajes, rutinas, alimentos y datos de tu cuenta y de este teléfono. No se podrán recuperar.",
                             fontSize = 13.sp,
                             lineHeight = 18.sp
                         )

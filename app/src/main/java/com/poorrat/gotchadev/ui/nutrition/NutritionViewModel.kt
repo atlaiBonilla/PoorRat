@@ -497,11 +497,7 @@ class NutritionViewModel(
                     is GroundingResult.Failure -> {
                         _aiEstimatedResult.value = null
                         val rawMsg = result.message
-                        _aiErrorMessage.value = if (rawMsg.contains("cuota", ignoreCase = true) || rawMsg.contains("quota", ignoreCase = true)) {
-                            rawMsg
-                        } else {
-                            "Error al estimar alimento: $rawMsg"
-                        }
+                        _aiErrorMessage.value = rawMsg
                     }
                 }
             } catch (e: kotlinx.coroutines.CancellationException) {

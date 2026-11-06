@@ -5,13 +5,8 @@ import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.generationConfig
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
-import org.json.JSONArray
 import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
 
 private const val TAG = "FoodSearchEstimator"
 
@@ -32,12 +27,6 @@ sealed interface GroundingResult {
 }
 
 object FoodSearchGroundingEstimator {
-
-    /**
-     * Optional personal Gemini API Key configured by the user in Settings.
-     */
-    @Volatile
-    var customApiKey: String? = null
 
     // Ultra-lightweight, token-efficient primary model: gemini-3.5-flash-lite
     // Configured for fast raw JSON output with minimal token consumption
@@ -63,8 +52,8 @@ object FoodSearchGroundingEstimator {
     }
 
     /**
-     * Estimates food macros using the ultra-lightweight gemini-3.5-flash-lite model.
-     * Consumes minimal tokens and runs with sub-second latency.
+     * Estimates food macros using the ultra-lightweight gemini-3.5-flash-lite model,
+     * with gemini-3.8-flash as fallback.
      */
     suspend fun estimateFood(userPrompt: String): GroundingResult {
         val trimmed = userPrompt.trim()
@@ -74,18 +63,7 @@ object FoodSearchGroundingEstimator {
 
         val prompt = buildNutritionPrompt(trimmed)
 
-        // 1. If user provided a personal Gemini API Key in Settings, try it first
-        val personalKey = customApiKey?.trim()
-        if (!personalKey.isNullOrBlank()) {
-            Log.d(TAG, "Using custom Gemini API key for estimation")
-            val customResult = callGeminiApiWithCustomKey(personalKey, prompt)
-            if (customResult is GroundingResult.Success || customResult is GroundingResult.NotEdible) {
-                return customResult
-            }
-            Log.w(TAG, "Custom key failed or reached limit, falling back to Firebase AI Logic")
-        }
-
-        // 2. Primary: Lightweight, fast execution with gemini-3.5-flash-lite
+        // 1. Primary: Lightweight, fast execution with gemini-3.5-flash-lite
         try {
             Log.d(TAG, "Running nutrition estimation on gemini-3.5-flash-lite")
             val response = withTimeout(20_000L) {
@@ -104,7 +82,7 @@ object FoodSearchGroundingEstimator {
             Log.w(TAG, "gemini-3.5-flash-lite attempt failed: ${e.message}, trying flashModel fallback...", e)
         }
 
-        // 3. Fallback: gemini-3.8-flash
+        // 2. Fallback: gemini-3.8-flash
         return try {
             val response = withTimeout(25_000L) {
                 flashModel.generateContent(prompt)
@@ -121,7 +99,7 @@ object FoodSearchGroundingEstimator {
             Log.e(TAG, "Fallback AI estimation failed: ${e.message}", e)
             val msg = e.message.orEmpty()
             if (msg.contains("quota", ignoreCase = true) || msg.contains("429") || msg.contains("RESOURCE_EXHAUSTED", ignoreCase = true)) {
-                GroundingResult.Failure("Límite temporal de cuota alcanzado. Puedes usar la opción de Catálogo o Ingreso Manual.")
+                GroundingResult.Failure("Límite temporal alcanzado. Puedes usar la opción de Catálogo o Ingreso Manual.")
             } else {
                 GroundingResult.Failure("Error al estimar con IA: ${e.localizedMessage ?: "Intenta nuevamente"}")
             }
@@ -139,68 +117,6 @@ object FoodSearchGroundingEstimator {
             Responde ÚNICAMENTE en JSON con este formato:
             {"isEdibleFood":true,"foodName":"Nombre descriptivo","grams":250.0,"calories":350,"protein":25.0,"carbs":30.0,"fat":10.0,"summaryDescription":"Estimado con IA"}
         """.trimIndent()
-    }
-
-    /**
-     * Direct REST call if user configured their personal Gemini API Key.
-     */
-    private suspend fun callGeminiApiWithCustomKey(apiKey: String, prompt: String): GroundingResult = withContext(Dispatchers.IO) {
-        try {
-            val endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey"
-            val url = URL(endpoint)
-            val conn = url.openConnection() as HttpURLConnection
-            conn.requestMethod = "POST"
-            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8")
-            conn.connectTimeout = 15000
-            conn.readTimeout = 15000
-            conn.doOutput = true
-
-            val requestBody = JSONObject().apply {
-                val parts = JSONArray().put(JSONObject().put("text", prompt))
-                put("contents", JSONArray().put(JSONObject().put("parts", parts)))
-                val genConfig = JSONObject().apply {
-                    put("responseMimeType", "application/json")
-                    put("temperature", 0.1)
-                }
-                put("generationConfig", genConfig)
-            }
-
-            conn.outputStream.use { os ->
-                os.write(requestBody.toString().toByteArray(Charsets.UTF_8))
-            }
-
-            val code = conn.responseCode
-            if (code in 200..299) {
-                val respText = conn.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
-                val parsed = extractTextFromApiResponse(respText)
-                if (parsed != null) {
-                    val result = parseEstimatedFood(parsed)
-                    if (result is GroundingResult.Success) {
-                        return@withContext GroundingResult.Success(
-                            result.result.copy(summaryDescription = "${result.result.summaryDescription} (API Key personal)")
-                        )
-                    }
-                    return@withContext result
-                }
-            }
-            GroundingResult.Failure("Respuesta no válida de la API personalizada.")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error calling custom API key", e)
-            GroundingResult.Failure("Error con API Key: ${e.localizedMessage}")
-        }
-    }
-
-    private fun extractTextFromApiResponse(responseText: String): String? {
-        return try {
-            val json = JSONObject(responseText)
-            val candidates = json.optJSONArray("candidates") ?: return null
-            val first = candidates.optJSONObject(0) ?: return null
-            val content = first.optJSONObject("content") ?: return null
-            val parts = content.optJSONArray("parts") ?: return null
-            parts.optJSONObject(0)?.optString("text")
-        } catch (_: Exception) {
-            null
-        }
     }
 
     suspend fun estimateWithGoogleSearch(userPrompt: String): EstimatedFoodResult? {
