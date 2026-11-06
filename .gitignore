@@ -12,5 +12,8 @@
 /captures
 .externalNativeBuild
 .cxx
-local.properties
 *-debug.log
+local.properties
+.env
+.env.local
+.env.*.local
