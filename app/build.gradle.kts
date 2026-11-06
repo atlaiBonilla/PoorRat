@@ -9,6 +9,7 @@ plugins {
 android {
     namespace = "com.poorrat.gotchadev"
     compileSdk = 36
+    buildToolsVersion = "36.0.0"
 
     defaultConfig {
         applicationId = "com.poorrat.gotchadev"
